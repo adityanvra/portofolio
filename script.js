@@ -451,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalDesc = document.getElementById('modalDesc');
     const modalTech = document.getElementById('modalTech');
     const modalGithub = document.getElementById('modalGithub');
+    const modalDemo = document.getElementById('modalDemo');
 
     function openModal(card) {
         if (!projectModal) return;
@@ -458,10 +459,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const desc = card.getAttribute('data-desc') || '';
         const techStr = card.getAttribute('data-tech') || '';
         const github = card.getAttribute('data-github') || '#';
+        const demo = card.getAttribute('data-demo');
 
         modalTitle.textContent = title;
         modalDesc.textContent = desc;
         modalGithub.setAttribute('href', github);
+
+        if (modalDemo) {
+            if (demo) {
+                modalDemo.setAttribute('href', demo);
+                modalDemo.classList.remove('hidden');
+            } else {
+                modalDemo.classList.add('hidden');
+            }
+        }
 
         modalTech.innerHTML = '';
         techStr.split(',').forEach(tech => {
