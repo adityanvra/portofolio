@@ -1078,12 +1078,28 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const lofiNextBtn = document.getElementById('lofiNextBtn');
     const lofiTrackName = document.getElementById('lofiTrackName');
     const lofiTrackDesc = document.getElementById('lofiTrackDesc');
-    const lofiVolume = document.getElementById('lofiVolume');
+    const trackSpotifyLink = document.getElementById('trackSpotifyLink');
+    const trackYoutubeLink = document.getElementById('trackYoutubeLink');
 
     const lofiTracks = [
-        { name: '🌊 Wave To Earth — love', desc: 'Indie Pop & Soft Lofi Vibe' },
-        { name: '🐥 Ndarboy Gank — Kicau Mania', desc: 'Upbeat Koplo & Chirping Bird Ambience' },
-        { name: '🌧️ Rainy Night Focus Beats', desc: 'Soothing Ambient Rain & Lo-Fi Rhythm' }
+        { 
+            name: '🌊 Wave To Earth — love', 
+            desc: 'Indie Pop & Soft Lofi Vibe',
+            spotify: 'https://open.spotify.com/search/wave%20to%20earth%20love',
+            youtube: 'https://www.youtube.com/results?search_query=wave+to+earth+love'
+        },
+        { 
+            name: '🐥 Ndarboy Gank — Kicau Mania', 
+            desc: 'Upbeat Koplo & Chirping Bird Ambience',
+            spotify: 'https://open.spotify.com/search/Ndarboy%20Gank%20Kicau%20Mania',
+            youtube: 'https://www.youtube.com/results?search_query=ndarboy+gank+kicau+mania'
+        },
+        { 
+            name: '🌧️ Rainy Night Focus Beats', 
+            desc: 'Soothing Ambient Rain & Lo-Fi Rhythm',
+            spotify: 'https://open.spotify.com/search/lofi%20rain%20beats',
+            youtube: 'https://www.youtube.com/results?search_query=lofi+rain+beats'
+        }
     ];
 
     let currentTrackIdx = 0;
@@ -1217,5 +1233,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         const track = lofiTracks[currentTrackIdx];
         if (lofiTrackName) lofiTrackName.textContent = track.name;
         if (lofiTrackDesc) lofiTrackDesc.textContent = track.desc;
+        if (trackSpotifyLink) trackSpotifyLink.href = track.spotify;
+        if (trackYoutubeLink) trackYoutubeLink.href = track.youtube;
     }
 });
