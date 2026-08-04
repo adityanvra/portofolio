@@ -636,20 +636,23 @@ img {
 
 .avatar-badge {
     position: absolute;
-    bottom: 20px;
-    right: -20px;
-    z-index: 3;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
-    padding: 8px 16px;
+    background: rgba(15, 15, 23, 0.95);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    padding: 8px 18px;
     border-radius: 100px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
     white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(34, 197, 94, 0.25);
 }
 
 .badge-dot {
@@ -661,7 +664,7 @@ img {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
     50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
 }
 
@@ -685,6 +688,7 @@ img {
     color: var(--text-secondary);
     white-space: nowrap;
     box-shadow: var(--shadow-card);
+    z-index: 5;
 }
 
 .float-card svg {
@@ -692,14 +696,14 @@ img {
 }
 
 .float-card-1 {
-    top: 10%;
-    left: -30px;
+    top: 15px;
+    left: -40px;
     animation: floatCard1 6s ease-in-out infinite;
 }
 
 .float-card-2 {
-    bottom: 15%;
-    right: -20px;
+    top: 60px;
+    right: -40px;
     animation: floatCard2 7s ease-in-out infinite;
 }
 
