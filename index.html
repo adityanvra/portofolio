@@ -61,11 +61,6 @@
                     </div>
                 </div>
 
-                <!-- VS Code / Raycast Style Command Palette Trigger Button -->
-                <button class="nav-action-btn magnetic-btn cmd-kbd-btn" id="cmdPaletteBtn" title="Command Palette (Ctrl + K)" aria-label="Open Command Palette">
-                    <span class="cmd-icon">⌘K</span>
-                </button>
-
                 <!-- Interactive Dev Terminal Trigger Button -->
                 <button class="nav-action-btn magnetic-btn" id="terminalToggleBtn" title="Open Interactive Dev CLI Terminal" aria-label="Open CLI Terminal">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
@@ -813,7 +808,7 @@
     </div>
 
     <!-- Embedded Cyberpunk / Lofi Ambient Developer Audio Player Widget -->
-    <div id="lofiPlayerWidget" class="lofi-widget aura-card">
+    <div id="lofiPlayerWidget" class="lofi-widget">
         <button id="lofiToggleExpandBtn" class="lofi-toggle-expand" title="Lofi Audio Player">
             <span class="music-icon">🎧</span>
             <div class="eq-bars hidden" id="eqBars">
@@ -838,8 +833,6 @@
                 <span>🔊</span>
                 <input type="range" id="lofiVolume" min="0" max="1" step="0.05" value="0.5">
             </div>
-            <!-- YouTube iFrame Hidden Player (Must not be display:none for YouTube API) -->
-            <div id="ytAudioPlayer" class="yt-hidden-player"></div>
         </div>
     </div>
 
@@ -864,35 +857,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Raycast / VS Code Style Command Palette Modal (Ctrl + K / ⌘K) -->
-    <div id="cmdPaletteModal" class="cmd-palette-modal hidden">
-        <div class="cmd-palette-backdrop" id="cmdPaletteBackdrop"></div>
-        <div class="cmd-palette-card aura-card">
-            <div class="cmd-palette-input-wrapper">
-                <span class="cmd-search-icon">🔍</span>
-                <input type="text" id="cmdSearchInput" placeholder="Type a command or search... (e.g. 'projects', 'snake', 'ghibli', 'resume')" autocomplete="off">
-                <span class="cmd-esc-badge">ESC</span>
-            </div>
-            <div class="cmd-palette-results" id="cmdResultsList">
-                <div class="cmd-group-title">NAVIGATION & ACTIONS</div>
-                <div class="cmd-item" data-action="nav" data-target="#projects"><span class="cmd-item-icon">🚀</span> View Featured Projects <span class="cmd-shortcut">Jump</span></div>
-                <div class="cmd-item" data-action="nav" data-target="#skills"><span class="cmd-item-icon">⚡</span> Technical Stack & Skills <span class="cmd-shortcut">Jump</span></div>
-                <div class="cmd-item" data-action="nav" data-target="#experience"><span class="cmd-item-icon">💼</span> Experience & Background <span class="cmd-shortcut">Jump</span></div>
-                <div class="cmd-item" data-action="nav" data-target="#contact"><span class="cmd-item-icon">📫</span> Contact & Social Links <span class="cmd-shortcut">Jump</span></div>
-                <div class="cmd-group-title">INTERACTIVE MODES & GAMES</div>
-                <div class="cmd-item" data-action="game"><span class="cmd-item-icon">🎮</span> Retro Arcade Snake Mini-Game <span class="cmd-shortcut">Play</span></div>
-                <div class="cmd-item" data-action="terminal"><span class="cmd-item-icon">💻</span> Interactive Dev CLI Terminal <span class="cmd-shortcut">Open</span></div>
-                <div class="cmd-item" data-action="music"><span class="cmd-item-icon">🎧</span> Play Ghibli / Wave To Earth Radio <span class="cmd-shortcut">Radio</span></div>
-                <div class="cmd-item" data-action="matrix"><span class="cmd-item-icon">💚</span> Matrix Digital Rain Canvas <span class="cmd-shortcut">Shift+M</span></div>
-                <div class="cmd-group-title">CV & SOCIALS</div>
-                <div class="cmd-item" data-action="cv"><span class="cmd-item-icon">📄</span> Download Resume / CV <span class="cmd-shortcut">PDF</span></div>
-                <div class="cmd-item" data-action="github"><span class="cmd-item-icon">🐙</span> Open GitHub Profile <span class="cmd-shortcut">Link</span></div>
-                <div class="cmd-item" data-action="linkedin"><span class="cmd-item-icon">💼</span> Open LinkedIn Profile <span class="cmd-shortcut">Link</span></div>
-                <div class="cmd-item" data-action="instagram"><span class="cmd-item-icon">📸</span> Open Instagram Profile <span class="cmd-shortcut">Link</span></div>
-            </div>
-        </div>
-    </div>
 
     <script src="script.js"></script>
 </body>
