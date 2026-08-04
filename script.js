@@ -155,4 +155,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }, { threshold: 0.5 });
         statsObserver.observe(statsSection);
     }
+
+    // 7. Interactive Email Button (Copy + Open Gmail)
+    const copyEmailBtn = document.getElementById('copyEmailBtn');
+    const copyEmailBtnText = document.getElementById('copyEmailBtnText');
+    if (copyEmailBtn && copyEmailBtnText) {
+        copyEmailBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = copyEmailBtn.getAttribute('data-email') || 'adityanavra567@gmail.com';
+            
+            // Copy to clipboard
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(email);
+            }
+
+            // Visual Feedback
+            copyEmailBtnText.textContent = 'Email Copied! ✓';
+            copyEmailBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            
+            setTimeout(() => {
+                copyEmailBtnText.textContent = 'Say Hello!';
+                copyEmailBtn.style.background = '';
+            }, 2500);
+
+            // Open Gmail compose in new tab
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`, '_blank');
+        });
+    }
 });
