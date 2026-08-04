@@ -1994,6 +1994,38 @@ img {
     gap: 12px;
 }
 
+.snake-settings-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.setting-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.snake-speed-btn, .snake-mode-btn {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.snake-speed-btn:hover, .snake-speed-btn.active, .snake-mode-btn.active {
+    background: var(--accent-1);
+    color: #fff;
+    border-color: transparent;
+}
+
 .dpad-grid {
     display: grid;
     grid-template-columns: repeat(3, 44px);

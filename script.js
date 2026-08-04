@@ -659,7 +659,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     });
 
     // ==========================================
-    // 15. Retro Arcade Snake Mini-Game Engine
+    // 15. Retro Arcade Snake Mini-Game Engine (Enhanced Easy Mode)
     // ==========================================
     const snakeGameModal = document.getElementById('snakeGameModal');
     const gameToggleBtn = document.getElementById('gameToggleBtn');
@@ -671,6 +671,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const snakeGameOverOverlay = document.getElementById('snakeGameOverOverlay');
     const finalScoreEl = document.getElementById('finalScore');
     const snakeRestartBtn = document.getElementById('snakeRestartBtn');
+    const snakeWallModeBtn = document.getElementById('snakeWallModeBtn');
 
     let snakeCtx = snakeCanvas ? snakeCanvas.getContext('2d') : null;
     let snakeGridSize = 20;
@@ -682,6 +683,10 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     let highScore = localStorage.getItem('snakeHighScore') || 0;
     let gameLoopInterval = null;
     let isGameOver = false;
+    let currentSnakeSpeed = 160; // 🐢 Chill Easy Speed by default
+    let passThroughWalls = true;  // 🌀 Pass-through walls enabled by default!
+    let changedDirThisTick = false;
+    let foodPulseTimer = 0;
 
     if (snakeHighScoreEl) snakeHighScoreEl.textContent = highScore;
 
@@ -708,39 +713,74 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         startSnakeLoop();
     });
 
+    if (snakeWallModeBtn) {
+        snakeWallModeBtn.addEventListener('click', () => {
+            passThroughWalls = !passThroughWalls;
+            snakeWallModeBtn.classList.toggle('active', passThroughWalls);
+            snakeWallModeBtn.textContent = passThroughWalls ? 'Pass Walls 🌀' : 'Solid Walls 🧱';
+            showToast(passThroughWalls ? '🌀 Pass-Through Walls Enabled!' : '🧱 Solid Walls Enabled!');
+        });
+    }
+
+    document.querySelectorAll('.snake-speed-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.snake-speed-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentSnakeSpeed = parseInt(btn.getAttribute('data-speed')) || 160;
+            if (gameLoopInterval) startSnakeLoop();
+        });
+    });
+
     function resetSnakeGame() {
         snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
         dx = 1; dy = 0;
         score = 0;
         isGameOver = false;
+        changedDirThisTick = false;
         if (snakeScoreEl) snakeScoreEl.textContent = score;
         if (snakeGameOverOverlay) snakeGameOverOverlay.classList.add('hidden');
         generateFood();
     }
 
     function generateFood() {
-        food.x = Math.floor(Math.random() * snakeTileCount);
-        food.y = Math.floor(Math.random() * snakeTileCount);
+        let valid = false;
+        while (!valid) {
+            food.x = Math.floor(Math.random() * (snakeTileCount - 2)) + 1;
+            food.y = Math.floor(Math.random() * (snakeTileCount - 2)) + 1;
+            valid = !snake.some(part => part.x === food.x && part.y === food.y);
+        }
     }
 
     function startSnakeLoop() {
         clearInterval(gameLoopInterval);
-        gameLoopInterval = setInterval(updateSnake, 110);
+        gameLoopInterval = setInterval(updateSnake, currentSnakeSpeed);
     }
 
     function updateSnake() {
         if (isGameOver || !snakeCtx) return;
+        changedDirThisTick = false;
+        foodPulseTimer += 0.2;
 
-        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+        let newX = snake[0].x + dx;
+        let newY = snake[0].y + dy;
 
-        // Grid collision check
-        if (head.x < 0 || head.x >= snakeTileCount || head.y < 0 || head.y >= snakeTileCount) {
-            triggerGameOver();
-            return;
+        // Wall handling
+        if (passThroughWalls) {
+            if (newX < 0) newX = snakeTileCount - 1;
+            if (newX >= snakeTileCount) newX = 0;
+            if (newY < 0) newY = snakeTileCount - 1;
+            if (newY >= snakeTileCount) newY = 0;
+        } else {
+            if (newX < 0 || newX >= snakeTileCount || newY < 0 || newY >= snakeTileCount) {
+                triggerGameOver();
+                return;
+            }
         }
 
-        // Self collision check
-        for (let i = 0; i < snake.length; i++) {
+        const head = { x: newX, y: newY };
+
+        // Self collision check (ignoring tail tip)
+        for (let i = 0; i < snake.length - 1; i++) {
             if (snake[i].x === head.x && snake[i].y === head.y) {
                 triggerGameOver();
                 return;
@@ -772,7 +812,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         snakeCtx.fillStyle = '#050508';
         snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
 
-        // Draw grid lines
+        // Draw subtle grid
         snakeCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         snakeCtx.lineWidth = 1;
         for (let i = 0; i < snakeCanvas.width; i += snakeGridSize) {
@@ -782,24 +822,39 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
             snakeCtx.stroke();
         }
 
-        // Draw food
+        // Draw Pulsing Large Food (Super easy to see and hit!)
+        const pulseRadius = (snakeGridSize / 2) - 1 + Math.sin(foodPulseTimer) * 1.5;
+        const foodCenterX = food.x * snakeGridSize + snakeGridSize / 2;
+        const foodCenterY = food.y * snakeGridSize + snakeGridSize / 2;
+
+        // Outer aura glow
+        snakeCtx.beginPath();
+        snakeCtx.arc(foodCenterX, foodCenterY, pulseRadius + 4, 0, Math.PI * 2);
+        snakeCtx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+        snakeCtx.fill();
+
+        // Main food orb
+        snakeCtx.beginPath();
+        snakeCtx.arc(foodCenterX, foodCenterY, pulseRadius, 0, Math.PI * 2);
         snakeCtx.fillStyle = '#ef4444';
         snakeCtx.shadowColor = '#ef4444';
-        snakeCtx.shadowBlur = 12;
-        snakeCtx.fillRect(food.x * snakeGridSize + 2, food.y * snakeGridSize + 2, snakeGridSize - 4, snakeGridSize - 4);
+        snakeCtx.shadowBlur = 15;
+        snakeCtx.fill();
         snakeCtx.shadowBlur = 0;
 
-        // Draw snake
+        // Draw Snake Body
         snake.forEach((part, index) => {
-            if (index === 0) {
+            if (index === 0) { // Head
                 snakeCtx.fillStyle = '#22c55e';
                 snakeCtx.shadowColor = '#22c55e';
-                snakeCtx.shadowBlur = 10;
+                snakeCtx.shadowBlur = 12;
             } else {
-                snakeCtx.fillStyle = 'rgba(34, 197, 94, 0.7)';
+                snakeCtx.fillStyle = 'rgba(34, 197, 94, 0.8)';
                 snakeCtx.shadowBlur = 0;
             }
-            snakeCtx.fillRect(part.x * snakeGridSize + 1, part.y * snakeGridSize + 1, snakeGridSize - 2, snakeGridSize - 2);
+            snakeCtx.beginPath();
+            snakeCtx.roundRect(part.x * snakeGridSize + 1, part.y * snakeGridSize + 1, snakeGridSize - 2, snakeGridSize - 2, 4);
+            snakeCtx.fill();
         });
         snakeCtx.shadowBlur = 0;
     }
@@ -812,13 +867,21 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         if (snakeGameOverOverlay) snakeGameOverOverlay.classList.remove('hidden');
     }
 
-    // Keyboard Controls for Snake
+    function changeDirection(newDx, newDy) {
+        if (changedDirThisTick) return;
+        if ((newDx === -dx && newDx !== 0) || (newDy === -dy && newDy !== 0)) return;
+        dx = newDx;
+        dy = newDy;
+        changedDirThisTick = true;
+    }
+
+    // Keyboard Controls
     document.addEventListener('keydown', (e) => {
         if (!snakeGameModal || !snakeGameModal.classList.contains('active')) return;
-        if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && dy === 0) { dx = 0; dy = -1; }
-        else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && dy === 0) { dx = 0; dy = 1; }
-        else if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && dx === 0) { dx = -1; dy = 0; }
-        else if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && dx === 0) { dx = 1; dy = 0; }
+        if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') changeDirection(0, -1);
+        else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') changeDirection(0, 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') changeDirection(-1, 0);
+        else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') changeDirection(1, 0);
     });
 
     // Touch D-Pad Controls
@@ -828,10 +891,10 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const dpadRight = document.getElementById('dpadRight');
     const dpadReset = document.getElementById('dpadReset');
 
-    if (dpadUp) dpadUp.addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -1; } });
-    if (dpadDown) dpadDown.addEventListener('click', () => { if (dy === 0) { dx = 0; dy = 1; } });
-    if (dpadLeft) dpadLeft.addEventListener('click', () => { if (dx === 0) { dx = -1; dy = 0; } });
-    if (dpadRight) dpadRight.addEventListener('click', () => { if (dx === 0) { dx = 1; dy = 0; } });
+    if (dpadUp) dpadUp.addEventListener('click', () => changeDirection(0, -1));
+    if (dpadDown) dpadDown.addEventListener('click', () => changeDirection(0, 1));
+    if (dpadLeft) dpadLeft.addEventListener('click', () => changeDirection(-1, 0));
+    if (dpadRight) dpadRight.addEventListener('click', () => changeDirection(1, 0));
     if (dpadReset) dpadReset.addEventListener('click', resetSnakeGame);
 
     // ==========================================
