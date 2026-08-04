@@ -1117,17 +1117,20 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         { 
             name: '🏰 Ghibli — Merry-Go-Round of Life', 
             desc: "Howl's Moving Castle Theme (Joe Hisaishi)",
-            youtubeId: 'HMGetv40FkI' // Updated high-compatibility embedding video ID
+            youtubeId: 'HMGetv40FkI',
+            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
         },
         { 
             name: '🌊 Wave To Earth — love', 
             desc: 'Official Original Track (사랑으로)',
-            youtubeId: 'Q49pnA4jsp8'
+            youtubeId: 'Q49pnA4jsp8',
+            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
         },
         { 
             name: '🌸 Wang OK — before springs end', 
             desc: 'Official Original Track',
-            youtubeId: 'tX4rUDi_ER4'
+            youtubeId: 'tX4rUDi_ER4',
+            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
         }
     ];
 
@@ -1135,6 +1138,8 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     let isPlayingLofi = false;
     let ytAudioPlayer = null;
     let isYtReady = false;
+    let fallbackAudio = new Audio();
+    fallbackAudio.loop = true;
 
     // Load YouTube iFrame API script asynchronously
     if (!window.YT) {
@@ -1148,8 +1153,8 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     window.onYouTubeIframeAPIReady = function() {
         ytAudioPlayer = new YT.Player('ytAudioPlayer', {
-            height: '0',
-            width: '0',
+            height: '100',
+            width: '100',
             videoId: lofiTracks[0].youtubeId,
             playerVars: {
                 'autoplay': 0,
@@ -1166,12 +1171,8 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                     }
                 },
                 'onError': (e) => {
-                    console.log('YouTube embed error code:', e.data);
-                    // Fallback to next track or auto-recover
-                    if (currentTrackIdx === 0) {
-                        showToast('🎵 Ghibli Track Loading Fallback...');
-                        ytAudioPlayer.loadVideoById('3L7j58nBvLg');
-                    }
+                    console.log('YouTube embed error, switching to HTML5 audio fallback:', e.data);
+                    useFallbackAudio();
                 },
                 'onStateChange': (e) => {
                     if (e.data === 1) { // Playing
@@ -1189,6 +1190,20 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         });
     };
 
+    function useFallbackAudio() {
+        const track = lofiTracks[currentTrackIdx];
+        fallbackAudio.src = track.fallbackUrl;
+        fallbackAudio.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+        fallbackAudio.play().then(() => {
+            isPlayingLofi = true;
+            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+            if (eqBars) eqBars.classList.remove('hidden');
+            showToast('🎶 Playing High Quality Audio');
+        }).catch(err => {
+            console.log('Fallback audio error:', err);
+        });
+    }
+
     function toggleLofiBody() {
         if (!lofiBody) return;
         lofiBody.classList.toggle('hidden');
@@ -1198,24 +1213,28 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => { if (lofiBody) lofiBody.classList.add('hidden'); });
 
     function startLofiSound() {
-        if (!isYtReady || !ytAudioPlayer) {
-            showToast('🎵 Loading YouTube Audio Engine...');
-            return;
-        }
         const track = lofiTracks[currentTrackIdx];
-        const currentVid = (ytAudioPlayer.getVideoData && ytAudioPlayer.getVideoData()) ? ytAudioPlayer.getVideoData().video_id : null;
-        
-        if (currentVid !== track.youtubeId) {
-            ytAudioPlayer.loadVideoById(track.youtubeId);
+        if (isYtReady && ytAudioPlayer && ytAudioPlayer.loadVideoById) {
+            try {
+                const currentVid = (ytAudioPlayer.getVideoData && ytAudioPlayer.getVideoData()) ? ytAudioPlayer.getVideoData().video_id : null;
+                if (currentVid !== track.youtubeId) {
+                    ytAudioPlayer.loadVideoById(track.youtubeId);
+                } else {
+                    ytAudioPlayer.playVideo();
+                }
+            } catch(err) {
+                useFallbackAudio();
+            }
         } else {
-            ytAudioPlayer.playVideo();
+            useFallbackAudio();
         }
     }
 
     function stopLofiSound() {
         if (ytAudioPlayer && ytAudioPlayer.pauseVideo) {
-            ytAudioPlayer.pauseVideo();
+            try { ytAudioPlayer.pauseVideo(); } catch(e){}
         }
+        fallbackAudio.pause();
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1245,9 +1264,11 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     if (lofiVolume) {
         lofiVolume.addEventListener('input', () => {
+            const vol = parseFloat(lofiVolume.value);
             if (ytAudioPlayer && ytAudioPlayer.setVolume) {
-                ytAudioPlayer.setVolume(parseFloat(lofiVolume.value) * 100);
+                try { ytAudioPlayer.setVolume(vol * 100); } catch(e){}
             }
+            fallbackAudio.volume = vol;
         });
     }
 
@@ -1255,5 +1276,103 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         const track = lofiTracks[currentTrackIdx];
         if (lofiTrackName) lofiTrackName.textContent = track.name;
         if (lofiTrackDesc) lofiTrackDesc.textContent = track.desc;
+    }
+
+    // ==========================================
+    // 19. Raycast / VS Code Style Command Palette (Ctrl + K / ⌘K)
+    // ==========================================
+    const cmdPaletteBtn = document.getElementById('cmdPaletteBtn');
+    const cmdPaletteModal = document.getElementById('cmdPaletteModal');
+    const cmdPaletteBackdrop = document.getElementById('cmdPaletteBackdrop');
+    const cmdSearchInput = document.getElementById('cmdSearchInput');
+    const cmdResultsList = document.getElementById('cmdResultsList');
+
+    function openCommandPalette() {
+        if (!cmdPaletteModal) return;
+        cmdPaletteModal.classList.remove('hidden');
+        if (cmdSearchInput) {
+            cmdSearchInput.value = '';
+            cmdSearchInput.focus();
+        }
+        filterCmdItems('');
+    }
+
+    function closeCommandPalette() {
+        if (!cmdPaletteModal) return;
+        cmdPaletteModal.classList.add('hidden');
+    }
+
+    if (cmdPaletteBtn) cmdPaletteBtn.addEventListener('click', openCommandPalette);
+    if (cmdPaletteBackdrop) cmdPaletteBackdrop.addEventListener('click', closeCommandPalette);
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            if (cmdPaletteModal && cmdPaletteModal.classList.contains('hidden')) {
+                openCommandPalette();
+            } else {
+                closeCommandPalette();
+            }
+        } else if (e.key === 'Escape' && cmdPaletteModal && !cmdPaletteModal.classList.contains('hidden')) {
+            closeCommandPalette();
+        }
+    });
+
+    function filterCmdItems(query) {
+        if (!cmdResultsList) return;
+        const q = query.toLowerCase().trim();
+        const items = cmdResultsList.querySelectorAll('.cmd-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (text.includes(q)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    if (cmdSearchInput) {
+        cmdSearchInput.addEventListener('input', (e) => {
+            filterCmdItems(e.target.value);
+        });
+    }
+
+    if (cmdResultsList) {
+        cmdResultsList.addEventListener('click', (e) => {
+            const item = e.target.closest('.cmd-item');
+            if (!item) return;
+
+            const action = item.getAttribute('data-action');
+            const target = item.getAttribute('data-target');
+
+            closeCommandPalette();
+
+            if (action === 'nav' && target) {
+                const el = document.querySelector(target);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            } else if (action === 'game') {
+                const gameModal = document.getElementById('gameModal');
+                if (gameModal) gameModal.classList.add('active');
+            } else if (action === 'terminal') {
+                const cliModal = document.getElementById('cliTerminalModal');
+                if (cliModal) cliModal.classList.add('active');
+            } else if (action === 'music') {
+                toggleLofiBody();
+                toggleLofiPlay();
+            } else if (action === 'matrix') {
+                const matrixOverlay = document.getElementById('matrixOverlay');
+                if (matrixOverlay) matrixOverlay.classList.remove('hidden');
+            } else if (action === 'cv') {
+                const btnCV = document.getElementById('btnDownloadCV');
+                if (btnCV) btnCV.click();
+            } else if (action === 'github') {
+                window.open('https://github.com/adityanvra', '_blank');
+            } else if (action === 'linkedin') {
+                window.open('https://www.linkedin.com/in/adityanavra/', '_blank');
+            } else if (action === 'instagram') {
+                window.open('https://www.instagram.com/qdityanvra_/', '_blank');
+            }
+        });
     }
 });
