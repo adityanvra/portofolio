@@ -87,27 +87,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
+    // ==========================================
     // 2. Cursor Glow & Aura Spotlight Tracker (Framer Motion style)
     // ==========================================
     const cursorGlow = document.getElementById('cursorGlow');
     const auraCards = document.querySelectorAll('.aura-card');
+    let mouseAnimFrame = null;
 
     document.addEventListener('mousemove', (e) => {
-        const { clientX, clientY } = e;
+        if (window.innerWidth <= 768 || 'ontouchstart' in window) return;
         
-        if (cursorGlow) {
-            cursorGlow.style.left = `${clientX}px`;
-            cursorGlow.style.top = `${clientY}px`;
-            cursorGlow.style.opacity = '1';
-        }
+        if (mouseAnimFrame) cancelAnimationFrame(mouseAnimFrame);
+        mouseAnimFrame = requestAnimationFrame(() => {
+            const { clientX, clientY } = e;
+            
+            if (cursorGlow) {
+                cursorGlow.style.left = `${clientX}px`;
+                cursorGlow.style.top = `${clientY}px`;
+                cursorGlow.style.opacity = '1';
+            }
 
-        // Spotlight effect on each Aura Card
-        auraCards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
-            card.style.setProperty('--mouse-x', `${x}px`);
-            card.style.setProperty('--mouse-y', `${y}px`);
+            // Spotlight effect on each Aura Card
+            auraCards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
         });
     });
 
@@ -118,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     magneticBtns.forEach(btn => {
         btn.addEventListener('mousemove', (e) => {
+            if (window.innerWidth <= 768 || 'ontouchstart' in window) return;
             const rect = btn.getBoundingClientRect();
             const btnCenterX = rect.left + rect.width / 2;
             const btnCenterY = rect.top + rect.height / 2;
@@ -159,30 +167,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.getElementById('navbar');
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
+    let scrollAnimFrame = null;
 
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-
-        let currentSection = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 120;
-            const sectionHeight = section.offsetHeight;
-            if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-                currentSection = section.getAttribute('id');
+        if (scrollAnimFrame) cancelAnimationFrame(scrollAnimFrame);
+        scrollAnimFrame = requestAnimationFrame(() => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
             }
-        });
 
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${currentSection}`) {
-                link.classList.add('active');
-            }
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 120;
+                const sectionHeight = section.offsetHeight;
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.add('active');
+                }
+            });
         });
-    });
+    }, { passive: true });
 
     // Mobile Navigation Toggle
     const navToggle = document.getElementById('navToggle');
@@ -250,6 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tiltCards.forEach(card => {
         const handleTilt = (clientX, clientY) => {
+            if (window.innerWidth <= 768 || 'ontouchstart' in window) return;
             const rect = card.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
@@ -268,13 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         card.addEventListener('mousemove', (e) => handleTilt(e.clientX, e.clientY));
         card.addEventListener('mouseleave', resetTilt);
-
-        card.addEventListener('touchmove', (e) => {
-            if (e.touches && e.touches[0]) {
-                handleTilt(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, { passive: true });
-        card.addEventListener('touchend', resetTilt);
     });
 
     // ==========================================
@@ -1066,7 +1072,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     // ==========================================
-    // 18. Cyberpunk / Lofi Developer Audio Synthesizer
+    // 18. Official YouTube Audio Player Integration (100% Real Songs)
     // ==========================================
     const lofiWidget = document.getElementById('lofiPlayerWidget');
     const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
@@ -1078,31 +1084,69 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const lofiNextBtn = document.getElementById('lofiNextBtn');
     const lofiTrackName = document.getElementById('lofiTrackName');
     const lofiTrackDesc = document.getElementById('lofiTrackDesc');
-    const trackSpotifyLink = document.getElementById('trackSpotifyLink');
-    const trackYoutubeLink = document.getElementById('trackYoutubeLink');
+    const lofiVolume = document.getElementById('lofiVolume');
 
     const lofiTracks = [
         { 
             name: '🌊 Wave To Earth — love', 
-            desc: 'Indie Pop & Soft Lofi Vibe',
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
+            desc: 'Official Original Track (사랑으로)',
+            youtubeId: 'Q49pnA4jsp8'
         },
         { 
-            name: '🐥 Ndarboy Gank — Kicau Mania', 
-            desc: 'Upbeat Acoustic & Bird Chirps',
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
-        },
-        { 
-            name: '🌧️ Cozy Rain & Lo-Fi Beats', 
-            desc: 'Soothing Ambient Rain Soundscape',
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
+            name: '🌸 Wang OK — before springs end', 
+            desc: 'Official Original Track',
+            youtubeId: 'tX4rUDi_ER4'
         }
     ];
 
     let currentTrackIdx = 0;
     let isPlayingLofi = false;
-    let realAudio = new Audio();
-    realAudio.loop = true;
+    let ytAudioPlayer = null;
+    let isYtReady = false;
+
+    // Load YouTube iFrame API script asynchronously
+    if (!window.YT) {
+        const ytTag = document.createElement('script');
+        ytTag.src = "https://www.youtube.com/iframe_api";
+        const firstScript = document.getElementsByTagName('script')[0];
+        if (firstScript && firstScript.parentNode) {
+            firstScript.parentNode.insertBefore(ytTag, firstScript);
+        }
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+        ytAudioPlayer = new YT.Player('ytAudioPlayer', {
+            height: '0',
+            width: '0',
+            videoId: lofiTracks[0].youtubeId,
+            playerVars: {
+                'autoplay': 0,
+                'controls': 0,
+                'disablekb': 1,
+                'fs': 0,
+                'rel': 0
+            },
+            events: {
+                'onReady': () => {
+                    isYtReady = true;
+                    if (lofiVolume && ytAudioPlayer.setVolume) {
+                        ytAudioPlayer.setVolume(parseFloat(lofiVolume.value) * 100);
+                    }
+                },
+                'onStateChange': (e) => {
+                    if (e.data === 1) { // Playing
+                        isPlayingLofi = true;
+                        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+                        if (eqBars) eqBars.classList.remove('hidden');
+                    } else if (e.data === 2 || e.data === 0) { // Paused or Ended
+                        isPlayingLofi = false;
+                        if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
+                        if (eqBars) eqBars.classList.add('hidden');
+                    }
+                }
+            }
+        });
+    };
 
     function toggleLofiBody() {
         if (!lofiBody) return;
@@ -1113,22 +1157,24 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => { if (lofiBody) lofiBody.classList.add('hidden'); });
 
     function startLofiSound() {
-        const track = lofiTracks[currentTrackIdx];
-        if (realAudio.src !== track.audioUrl) {
-            realAudio.src = track.audioUrl;
+        if (!isYtReady || !ytAudioPlayer) {
+            showToast('🎵 Loading YouTube Audio Engine...');
+            return;
         }
-        realAudio.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
-        realAudio.play().then(() => {
-            isPlayingLofi = true;
-            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-            if (eqBars) eqBars.classList.remove('hidden');
-        }).catch(err => {
-            console.log('Audio playback error:', err);
-        });
+        const track = lofiTracks[currentTrackIdx];
+        const currentVid = (ytAudioPlayer.getVideoData && ytAudioPlayer.getVideoData()) ? ytAudioPlayer.getVideoData().video_id : null;
+        
+        if (currentVid !== track.youtubeId) {
+            ytAudioPlayer.loadVideoById(track.youtubeId);
+        } else {
+            ytAudioPlayer.playVideo();
+        }
     }
 
     function stopLofiSound() {
-        realAudio.pause();
+        if (ytAudioPlayer && ytAudioPlayer.pauseVideo) {
+            ytAudioPlayer.pauseVideo();
+        }
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1158,7 +1204,9 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     if (lofiVolume) {
         lofiVolume.addEventListener('input', () => {
-            realAudio.volume = parseFloat(lofiVolume.value);
+            if (ytAudioPlayer && ytAudioPlayer.setVolume) {
+                ytAudioPlayer.setVolume(parseFloat(lofiVolume.value) * 100);
+            }
         });
     }
 
