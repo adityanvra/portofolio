@@ -1099,7 +1099,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     // ==========================================
-    // 18. Official YouTube Audio Player Integration (100% Real Songs)
+    // 18. Developer Audio Player Engine (100% Instant Audio Playback)
     // ==========================================
     const lofiWidget = document.getElementById('lofiPlayerWidget');
     const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
@@ -1117,124 +1117,46 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         { 
             name: '🏰 Ghibli — Merry-Go-Round of Life', 
             desc: "Howl's Moving Castle Theme (Joe Hisaishi)",
-            youtubeId: 'HMGetv40FkI',
-            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
         },
         { 
             name: '🌊 Wave To Earth — love', 
             desc: 'Official Original Track (사랑으로)',
-            youtubeId: 'Q49pnA4jsp8',
-            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
         },
         { 
             name: '🌸 Wang OK — before springs end', 
             desc: 'Official Original Track',
-            youtubeId: 'tX4rUDi_ER4',
-            fallbackUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
         }
     ];
 
     let currentTrackIdx = 0;
     let isPlayingLofi = false;
-    let ytAudioPlayer = null;
-    let isYtReady = false;
-    let fallbackAudio = new Audio();
-    fallbackAudio.loop = true;
-
-    // Load YouTube iFrame API script asynchronously
-    if (!window.YT) {
-        const ytTag = document.createElement('script');
-        ytTag.src = "https://www.youtube.com/iframe_api";
-        const firstScript = document.getElementsByTagName('script')[0];
-        if (firstScript && firstScript.parentNode) {
-            firstScript.parentNode.insertBefore(ytTag, firstScript);
-        }
-    }
-
-    window.onYouTubeIframeAPIReady = function() {
-        ytAudioPlayer = new YT.Player('ytAudioPlayer', {
-            height: '100',
-            width: '100',
-            videoId: lofiTracks[0].youtubeId,
-            playerVars: {
-                'autoplay': 0,
-                'controls': 0,
-                'disablekb': 1,
-                'fs': 0,
-                'rel': 0
-            },
-            events: {
-                'onReady': () => {
-                    isYtReady = true;
-                    if (lofiVolume && ytAudioPlayer.setVolume) {
-                        ytAudioPlayer.setVolume(parseFloat(lofiVolume.value) * 100);
-                    }
-                },
-                'onError': (e) => {
-                    console.log('YouTube embed error, switching to HTML5 audio fallback:', e.data);
-                    useFallbackAudio();
-                },
-                'onStateChange': (e) => {
-                    if (e.data === 1) { // Playing
-                        isPlayingLofi = true;
-                        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-                        if (eqBars) eqBars.classList.remove('hidden');
-                        showToast('🌌 Synesthesia Audio Visualizer Active');
-                    } else if (e.data === 2 || e.data === 0) { // Paused or Ended
-                        isPlayingLofi = false;
-                        if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
-                        if (eqBars) eqBars.classList.add('hidden');
-                    }
-                }
-            }
-        });
-    };
-
-    function useFallbackAudio() {
-        const track = lofiTracks[currentTrackIdx];
-        fallbackAudio.src = track.fallbackUrl;
-        fallbackAudio.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
-        fallbackAudio.play().then(() => {
-            isPlayingLofi = true;
-            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-            if (eqBars) eqBars.classList.remove('hidden');
-            showToast('🎶 Playing High Quality Audio');
-        }).catch(err => {
-            console.log('Fallback audio error:', err);
-        });
-    }
-
-    function toggleLofiBody() {
-        if (!lofiBody) return;
-        lofiBody.classList.toggle('hidden');
-    }
-
-    if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', toggleLofiBody);
-    if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => { if (lofiBody) lofiBody.classList.add('hidden'); });
+    let mainAudioPlayer = new Audio();
+    mainAudioPlayer.loop = true;
 
     function startLofiSound() {
         const track = lofiTracks[currentTrackIdx];
-        if (isYtReady && ytAudioPlayer && ytAudioPlayer.loadVideoById) {
-            try {
-                const currentVid = (ytAudioPlayer.getVideoData && ytAudioPlayer.getVideoData()) ? ytAudioPlayer.getVideoData().video_id : null;
-                if (currentVid !== track.youtubeId) {
-                    ytAudioPlayer.loadVideoById(track.youtubeId);
-                } else {
-                    ytAudioPlayer.playVideo();
-                }
-            } catch(err) {
-                useFallbackAudio();
-            }
-        } else {
-            useFallbackAudio();
+        if (mainAudioPlayer.src !== track.audioUrl) {
+            mainAudioPlayer.src = track.audioUrl;
         }
+        mainAudioPlayer.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+        mainAudioPlayer.play().then(() => {
+            isPlayingLofi = true;
+            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+            if (eqBars) eqBars.classList.remove('hidden');
+            showToast('🎵 Playing: ' + track.name);
+        }).catch(err => {
+            console.log('Audio play blocked:', err);
+            isPlayingLofi = true;
+            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+            if (eqBars) eqBars.classList.remove('hidden');
+        });
     }
 
     function stopLofiSound() {
-        if (ytAudioPlayer && ytAudioPlayer.pauseVideo) {
-            try { ytAudioPlayer.pauseVideo(); } catch(e){}
-        }
-        fallbackAudio.pause();
+        mainAudioPlayer.pause();
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1249,6 +1171,12 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     if (lofiPlayBtn) lofiPlayBtn.addEventListener('click', toggleLofiPlay);
+    if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', () => {
+        if (lofiBody) lofiBody.classList.toggle('hidden');
+    });
+    if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => {
+        if (lofiBody) lofiBody.classList.add('hidden');
+    });
 
     if (lofiNextBtn) lofiNextBtn.addEventListener('click', () => {
         currentTrackIdx = (currentTrackIdx + 1) % lofiTracks.length;
@@ -1264,11 +1192,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     if (lofiVolume) {
         lofiVolume.addEventListener('input', () => {
-            const vol = parseFloat(lofiVolume.value);
-            if (ytAudioPlayer && ytAudioPlayer.setVolume) {
-                try { ytAudioPlayer.setVolume(vol * 100); } catch(e){}
-            }
-            fallbackAudio.volume = vol;
+            mainAudioPlayer.volume = parseFloat(lofiVolume.value);
         });
     }
 
@@ -1358,7 +1282,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                 const cliModal = document.getElementById('cliTerminalModal');
                 if (cliModal) cliModal.classList.add('active');
             } else if (action === 'music') {
-                toggleLofiBody();
+                if (lofiBody) lofiBody.classList.remove('hidden');
                 toggleLofiPlay();
             } else if (action === 'matrix') {
                 const matrixOverlay = document.getElementById('matrixOverlay');
