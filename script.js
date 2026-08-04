@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navbar = document.getElementById('navbar');
     const sections = document.querySelectorAll('section[id]');
     const navLinks = document.querySelectorAll('.nav-link');
+    const scrollProgressBar = document.getElementById('scrollProgressBar');
     let scrollAnimFrame = null;
 
     window.addEventListener('scroll', () => {
@@ -177,6 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 navbar.classList.add('scrolled');
             } else {
                 navbar.classList.remove('scrolled');
+            }
+
+            // Scroll Progress Bar
+            if (scrollProgressBar) {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+                scrollProgressBar.style.width = scrollPercent + '%';
             }
 
             let currentSection = '';

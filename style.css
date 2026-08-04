@@ -87,6 +87,22 @@ img {
 }
 
 /* ========================
+   Scroll Progress Bar
+   ======================== */
+.scroll-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #f43f5e);
+    z-index: 999999;
+    transition: width 0.05s linear;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.6), 0 0 20px rgba(168, 85, 247, 0.3);
+    border-radius: 0 2px 2px 0;
+}
+
+/* ========================
    Particle Canvas Background
    ======================== */
 .particle-canvas {
