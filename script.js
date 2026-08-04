@@ -1081,9 +1081,9 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const lofiVolume = document.getElementById('lofiVolume');
 
     const lofiTracks = [
-        { name: '🎵 Lofi Chill Hop Beats', desc: 'Warm Synthesized Ambient Chords & Vinyl Rhythm' },
-        { name: '🌧️ Rainy Night Coffee Shop', desc: 'Soothing Rain & Coziness Soundscape' },
-        { name: '✨ Midnight Cyber Ambient', desc: 'Relaxing Deep Space Synth Wave Pads' }
+        { name: '🌊 Wave To Earth — love', desc: 'Indie Pop & Soft Lofi Vibe' },
+        { name: '🐥 Ndarboy Gank — Kicau Mania', desc: 'Upbeat Koplo & Chirping Bird Ambience' },
+        { name: '🌧️ Rainy Night Focus Beats', desc: 'Soothing Ambient Rain & Lo-Fi Rhythm' }
     ];
 
     let currentTrackIdx = 0;
@@ -1113,18 +1113,18 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
         const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
 
-        if (currentTrackIdx === 0) { // Lofi Chill Hop Beats
+        if (currentTrackIdx === 0) { // 🌊 Wave To Earth — love (Dreamy Amaj7 Indie Chord)
             lofiOsc1 = lofiAudioCtx.createOscillator();
             lofiOsc2 = lofiAudioCtx.createOscillator();
             lofiGain = lofiAudioCtx.createGain();
 
             lofiOsc1.type = 'sine';
-            lofiOsc1.frequency.setValueAtTime(261.63, lofiAudioCtx.currentTime); // C4
+            lofiOsc1.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
 
             lofiOsc2.type = 'triangle';
-            lofiOsc2.frequency.setValueAtTime(329.63, lofiAudioCtx.currentTime); // E4
+            lofiOsc2.frequency.setValueAtTime(277.18, lofiAudioCtx.currentTime); // C#4
 
-            lofiGain.gain.setValueAtTime(vol * 0.12, lofiAudioCtx.currentTime);
+            lofiGain.gain.setValueAtTime(vol * 0.14, lofiAudioCtx.currentTime);
 
             lofiOsc1.connect(lofiGain);
             lofiOsc2.connect(lofiGain);
@@ -1132,7 +1132,26 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
             lofiOsc1.start();
             lofiOsc2.start();
-        } else if (currentTrackIdx === 1) { // Rainy Night Coffee Shop
+        } else if (currentTrackIdx === 1) { // 🐥 Ndarboy Gank — Kicau Mania (Upbeat Koplo & Bird Chirps)
+            lofiOsc1 = lofiAudioCtx.createOscillator();
+            lofiOsc2 = lofiAudioCtx.createOscillator();
+            lofiGain = lofiAudioCtx.createGain();
+
+            lofiOsc1.type = 'square';
+            lofiOsc1.frequency.setValueAtTime(392, lofiAudioCtx.currentTime); // G4
+
+            lofiOsc2.type = 'sine';
+            lofiOsc2.frequency.setValueAtTime(987.77, lofiAudioCtx.currentTime); // B5 Chirp
+
+            lofiGain.gain.setValueAtTime(vol * 0.08, lofiAudioCtx.currentTime);
+
+            lofiOsc1.connect(lofiGain);
+            lofiOsc2.connect(lofiGain);
+            lofiGain.connect(lofiAudioCtx.destination);
+
+            lofiOsc1.start();
+            lofiOsc2.start();
+        } else { // 🌧️ Rainy Night Focus Beats
             const bufferSize = lofiAudioCtx.sampleRate * 2;
             const buffer = lofiAudioCtx.createBuffer(1, bufferSize, lofiAudioCtx.sampleRate);
             const output = buffer.getChannelData(0);
@@ -1150,25 +1169,6 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
             lofiNoiseNode.connect(lofiGain);
             lofiGain.connect(lofiAudioCtx.destination);
             lofiNoiseNode.start();
-        } else { // Midnight Cyber Ambient
-            lofiOsc1 = lofiAudioCtx.createOscillator();
-            lofiOsc2 = lofiAudioCtx.createOscillator();
-            lofiGain = lofiAudioCtx.createGain();
-
-            lofiOsc1.type = 'sine';
-            lofiOsc1.frequency.setValueAtTime(146.83, lofiAudioCtx.currentTime); // D3
-
-            lofiOsc2.type = 'sine';
-            lofiOsc2.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
-
-            lofiGain.gain.setValueAtTime(vol * 0.1, lofiAudioCtx.currentTime);
-
-            lofiOsc1.connect(lofiGain);
-            lofiOsc2.connect(lofiGain);
-            lofiGain.connect(lofiAudioCtx.destination);
-
-            lofiOsc1.start();
-            lofiOsc2.start();
         }
 
         isPlayingLofi = true;
