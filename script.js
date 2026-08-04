@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = card.getAttribute('data-title') || 'Project';
         const desc = card.getAttribute('data-desc') || '';
         const techStr = card.getAttribute('data-tech') || '';
-        const github = card.getAttribute('data-github') || '#';
+        const github = card.getAttribute('data-github') || 'https://github.com/adityanvra';
         const demo = card.getAttribute('data-demo');
 
         modalTitle.textContent = title;
