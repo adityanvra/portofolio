@@ -1100,7 +1100,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     // ==========================================
-    // 18. Developer Audio Player Engine (100% Guaranteed Audio Playback)
+    // 18. YouTube iFrame API Audio Engine (Real Official Songs)
     // ==========================================
     const lofiWidget = document.getElementById('lofiPlayerWidget');
     const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
@@ -1117,103 +1117,91 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     const lofiTracks = [
         { 
             name: '🏰 Ghibli — Merry-Go-Round of Life', 
-            desc: "Howl's Moving Castle Theme (Joe Hisaishi)",
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
+            desc: "Howl's Moving Castle (Joe Hisaishi)",
+            ytId: 'HMGetv40FkI'
         },
         { 
             name: '🌊 Wave To Earth — love', 
-            desc: 'Official Original Track (사랑으로)',
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
+            desc: 'Official Track (사랑으로)',
+            ytId: 'Q49pnA4jsp8'
         },
         { 
             name: '🌸 Wang OK — before springs end', 
-            desc: 'Official Original Track',
-            audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
+            desc: 'Official Track',
+            ytId: 'tX4rUDi_ER4'
         }
     ];
 
     let currentTrackIdx = 0;
-    let mainAudioPlayer = new Audio();
-    mainAudioPlayer.loop = true;
-    let synthOsc1 = null, synthOsc2 = null, synthGain = null;
+    let ytPlayer = null;
+    let ytReady = false;
 
-    function playSynthAudio() {
-        try {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            if (!AudioCtx) return;
-            if (!audioCtx) audioCtx = new AudioCtx();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+    // Load YouTube iFrame API
+    const ytScript = document.createElement('script');
+    ytScript.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(ytScript);
 
-            stopSynthAudio();
-
-            synthOsc1 = audioCtx.createOscillator();
-            synthOsc2 = audioCtx.createOscillator();
-            synthGain = audioCtx.createGain();
-
-            const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
-
-            if (currentTrackIdx === 0) { // Ghibli Theme (Merry-Go-Round)
-                synthOsc1.type = 'sine';
-                synthOsc1.frequency.setValueAtTime(329.63, audioCtx.currentTime); // E4
-                synthOsc2.type = 'triangle';
-                synthOsc2.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4
-            } else if (currentTrackIdx === 1) { // Wave to Earth - love
-                synthOsc1.type = 'sine';
-                synthOsc1.frequency.setValueAtTime(220.00, audioCtx.currentTime); // A3
-                synthOsc2.type = 'triangle';
-                synthOsc2.frequency.setValueAtTime(277.18, audioCtx.currentTime); // C#4
-            } else { // Wang OK - before springs end
-                synthOsc1.type = 'sine';
-                synthOsc1.frequency.setValueAtTime(261.63, audioCtx.currentTime); // C4
-                synthOsc2.type = 'sine';
-                synthOsc2.frequency.setValueAtTime(329.63, audioCtx.currentTime); // E4
+    window.onYouTubeIframeAPIReady = function() {
+        ytPlayer = new YT.Player('ytPlayer', {
+            height: '1',
+            width: '1',
+            videoId: lofiTracks[0].ytId,
+            playerVars: {
+                autoplay: 0,
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                modestbranding: 1,
+                rel: 0,
+                playsinline: 1
+            },
+            events: {
+                onReady: function(event) {
+                    ytReady = true;
+                    event.target.setVolume(parseFloat(lofiVolume ? lofiVolume.value : 0.5) * 100);
+                },
+                onStateChange: function(event) {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        isPlayingLofi = true;
+                        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+                        if (eqBars) eqBars.classList.remove('hidden');
+                    } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                        isPlayingLofi = false;
+                        if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
+                        if (eqBars) eqBars.classList.add('hidden');
+                    }
+                },
+                onError: function(event) {
+                    console.log('YT Player error:', event.data);
+                    showToast('⚠️ Video tidak bisa diputar, coba lagu lain');
+                }
             }
-
-            synthGain.gain.setValueAtTime(vol * 0.12, audioCtx.currentTime);
-            synthOsc1.connect(synthGain);
-            synthOsc2.connect(synthGain);
-            synthGain.connect(audioCtx.destination);
-
-            synthOsc1.start();
-            synthOsc2.start();
-        } catch(e){}
-    }
-
-    function stopSynthAudio() {
-        if (synthOsc1) { try { synthOsc1.stop(); } catch(e){} synthOsc1 = null; }
-        if (synthOsc2) { try { synthOsc2.stop(); } catch(e){} synthOsc2 = null; }
-    }
+        });
+    };
 
     function startLofiSound() {
-        const track = lofiTracks[currentTrackIdx];
-        if (mainAudioPlayer.src !== track.audioUrl) {
-            mainAudioPlayer.src = track.audioUrl;
+        if (!ytReady || !ytPlayer) {
+            showToast('⏳ YouTube Player sedang loading...');
+            return;
         }
-        mainAudioPlayer.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
-
-        // Instant play trigger
-        playSynthAudio();
-        
-        mainAudioPlayer.play().then(() => {
-            isPlayingLofi = true;
-            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-            if (eqBars) eqBars.classList.remove('hidden');
+        const track = lofiTracks[currentTrackIdx];
+        try {
+            const currentVideoId = ytPlayer.getVideoData && ytPlayer.getVideoData() ? ytPlayer.getVideoData().video_id : null;
+            if (currentVideoId !== track.ytId) {
+                ytPlayer.loadVideoById(track.ytId);
+            } else {
+                ytPlayer.playVideo();
+            }
             showToast('🎵 Playing: ' + track.name);
-        }).catch(err => {
-            console.log('Audio stream play catch:', err);
-            isPlayingLofi = true;
-            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-            if (eqBars) eqBars.classList.remove('hidden');
-        });
-
-        isPlayingLofi = true;
-        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-        if (eqBars) eqBars.classList.remove('hidden');
+        } catch(e) {
+            console.log('YT play error:', e);
+        }
     }
 
     function stopLofiSound() {
-        mainAudioPlayer.pause();
-        stopSynthAudio();
+        if (ytPlayer && ytPlayer.pauseVideo) {
+            try { ytPlayer.pauseVideo(); } catch(e) {}
+        }
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1244,24 +1232,25 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     if (lofiNextBtn) lofiNextBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        stopLofiSound();
         currentTrackIdx = (currentTrackIdx + 1) % lofiTracks.length;
         updateTrackInfo();
-        if (isPlayingLofi) startLofiSound();
+        startLofiSound();
     });
 
     if (lofiPrevBtn) lofiPrevBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        stopLofiSound();
         currentTrackIdx = (currentTrackIdx - 1 + lofiTracks.length) % lofiTracks.length;
         updateTrackInfo();
-        if (isPlayingLofi) startLofiSound();
+        startLofiSound();
     });
 
     if (lofiVolume) {
         lofiVolume.addEventListener('input', () => {
-            const vol = parseFloat(lofiVolume.value);
-            mainAudioPlayer.volume = vol;
-            if (synthGain && audioCtx) {
-                synthGain.gain.setValueAtTime(vol * 0.12, audioCtx.currentTime);
+            const vol = Math.round(parseFloat(lofiVolume.value) * 100);
+            if (ytPlayer && ytPlayer.setVolume) {
+                try { ytPlayer.setVolume(vol); } catch(e) {}
             }
         });
     }
