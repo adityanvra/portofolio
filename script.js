@@ -249,10 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const tiltCards = document.querySelectorAll('.tilt-card');
 
     tiltCards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
+        const handleTilt = (clientX, clientY) => {
             const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
             const centerX = rect.width / 2;
             const centerY = rect.height / 2;
 
@@ -260,11 +260,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const rotateY = ((x - centerX) / centerX) * 7;
 
             card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        });
+        };
 
-        card.addEventListener('mouseleave', () => {
+        const resetTilt = () => {
             card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
-        });
+        };
+
+        card.addEventListener('mousemove', (e) => handleTilt(e.clientX, e.clientY));
+        card.addEventListener('mouseleave', resetTilt);
+
+        card.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches[0]) {
+                handleTilt(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: true });
+        card.addEventListener('touchend', resetTilt);
     });
 
     // ==========================================

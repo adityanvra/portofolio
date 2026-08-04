@@ -1655,9 +1655,66 @@ img {
     .nav-links.active { display: flex; }
     .nav-toggle { display: flex; }
 
-    .hero { padding: 100px 24px 40px; }
-    .avatar-container { width: 220px; height: 220px; }
-    .floating-cards, .scroll-indicator { display: none; }
+    .hero { padding: 100px 20px 40px; }
+    .avatar-container { 
+        width: 230px; 
+        height: 230px; 
+        margin: 0 auto;
+    }
+    
+    /* Enable Floating Cards on Mobile */
+    .floating-cards { 
+        display: block; 
+    }
+
+    .float-card {
+        font-size: 0.7rem;
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        backdrop-filter: blur(16px);
+        background: rgba(15, 15, 23, 0.92);
+        border: 1px solid var(--border-hover);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+        z-index: 6;
+    }
+
+    .float-card svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    .float-card-1 {
+        top: -15px;
+        left: -15px;
+        animation: floatMobileCard1 4s ease-in-out infinite;
+    }
+
+    .float-card-2 {
+        top: 35px;
+        right: -20px;
+        animation: floatMobileCard2 5s ease-in-out infinite;
+    }
+
+    @keyframes floatMobileCard1 {
+        0%, 100% { transform: translateY(0) rotate(-2deg); }
+        50% { transform: translateY(-8px) rotate(2deg); }
+    }
+
+    @keyframes floatMobileCard2 {
+        0%, 100% { transform: translateY(0) rotate(2deg); }
+        50% { transform: translateY(8px) rotate(-2deg); }
+    }
+
+    .avatar-badge {
+        bottom: -22px;
+        font-size: 0.74rem;
+        padding: 6px 14px;
+        background: rgba(15, 15, 23, 0.96);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7), 0 0 16px rgba(34, 197, 94, 0.3);
+    }
+
+    .scroll-indicator { display: none; }
 
     .skills-grid, .projects-grid { grid-template-columns: 1fr; }
 
