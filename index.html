@@ -41,6 +41,7 @@
                     <a href="#experience" class="nav-link">Experience</a>
                     <a href="#skills" class="nav-link">Skills</a>
                     <a href="#projects" class="nav-link">Projects</a>
+                    <a href="#architecture" class="nav-link">Architecture</a>
                     <a href="#contact" class="nav-link">Contact</a>
                 </div>
 
@@ -619,6 +620,46 @@
         </div>
     </section>
 
+    <!-- Clean Architecture & Code Quality Playground -->
+    <section class="section code-playground" id="architecture">
+        <div class="container">
+            <div class="section-header" data-animate="fade-up">
+                <span class="section-label">05. Engineering & Code Quality</span>
+                <h2 class="section-title">Clean Code <span class="gradient-text">Playground</span></h2>
+                <p class="section-subtext">Compare legacy monolithic code vs Aditya's clean, modular & scalable architecture.</p>
+            </div>
+
+            <div class="code-diff-card aura-card tilt-card" data-animate="fade-up">
+                <div class="code-diff-header">
+                    <div class="code-presets">
+                        <button class="preset-btn active" data-preset="hook">React Custom Hook</button>
+                        <button class="preset-btn" data-preset="backend">Node/Hapi Controller</button>
+                        <button class="preset-btn" data-preset="ml">Machine Learning Pipeline</button>
+                    </div>
+
+                    <div class="diff-toggle-wrapper">
+                        <span class="toggle-label">Mode:</span>
+                        <div class="diff-toggle-btns">
+                            <button class="diff-mode-btn" id="btnLegacy">Legacy Code ⚠️</button>
+                            <button class="diff-mode-btn active" id="btnClean">Aditya's Clean Architecture ⚡</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-diff-body">
+                    <div class="code-editor-header">
+                        <span class="file-name" id="diffFileName">useFetchData.ts</span>
+                        <span class="code-badge" id="diffBadge">Clean Custom Hook Pattern</span>
+                    </div>
+                    <pre class="code-block"><code id="codeDisplay"></code></pre>
+                    <div class="diff-note" id="diffNote">
+                        💡 <strong>Why it's better:</strong> Features automatic race-condition prevention, memory leak cleanup on unmount, strongly typed generics, and reusable error handling.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section class="section contact" id="contact">
         <div class="container">
@@ -798,6 +839,35 @@
     <div id="matrixOverlay" class="matrix-overlay hidden">
         <canvas id="matrixCanvas"></canvas>
         <button id="matrixExitBtn" class="btn btn-primary matrix-exit-btn">Exit Matrix (ESC)</button>
+    </div>
+
+    <!-- Embedded Cyberpunk / Lofi Ambient Developer Audio Player Widget -->
+    <div id="lofiPlayerWidget" class="lofi-widget aura-card">
+        <button id="lofiToggleExpandBtn" class="lofi-toggle-expand" title="Lofi Audio Player">
+            <span class="music-icon">🎧</span>
+            <div class="eq-bars hidden" id="eqBars">
+                <span></span><span></span><span></span>
+            </div>
+        </button>
+        <div class="lofi-player-body hidden" id="lofiBody">
+            <div class="lofi-header">
+                <span class="lofi-title">🎧 DEV LOFI RADIO</span>
+                <button id="lofiCloseBtn" class="lofi-mini-close">&times;</button>
+            </div>
+            <div class="lofi-track-info">
+                <span class="track-name" id="lofiTrackName">Cyberpunk Synth Pulse</span>
+                <span class="track-desc" id="lofiTrackDesc">Chill Synthesized Ambient Ambience</span>
+            </div>
+            <div class="lofi-controls">
+                <button id="lofiPrevBtn" class="lofi-btn" title="Previous Sound">⏮</button>
+                <button id="lofiPlayBtn" class="lofi-btn play-btn" title="Play / Pause">▶</button>
+                <button id="lofiNextBtn" class="lofi-btn" title="Next Sound">⏭</button>
+            </div>
+            <div class="lofi-volume-wrapper">
+                <span>🔊</span>
+                <input type="range" id="lofiVolume" min="0" max="1" step="0.05" value="0.5">
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->

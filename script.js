@@ -890,4 +890,433 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
             startMatrixRain();
         }
     });
+
+    // ==========================================
+    // 17. Interactive Particle Universe Engine
+    // ==========================================
+    const pCanvas = document.getElementById('particleCanvas');
+    if (pCanvas) {
+        const pCtx = pCanvas.getContext('2d');
+        let pWidth = pCanvas.width = window.innerWidth;
+        let pHeight = pCanvas.height = window.innerHeight;
+        let particles = [];
+        let ripples = [];
+        let mouse = { x: -1000, y: -1000 };
+
+        window.addEventListener('resize', () => {
+            pWidth = pCanvas.width = window.innerWidth;
+            pHeight = pCanvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('click', (e) => {
+            ripples.push({ x: e.clientX, y: e.clientY, radius: 0, maxRadius: 180, alpha: 0.8 });
+        });
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor((pWidth * pHeight) / 20000), 75);
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * pWidth,
+                    y: Math.random() * pHeight,
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    radius: Math.random() * 2 + 1,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+        initParticles();
+
+        function renderParticles() {
+            pCtx.clearRect(0, 0, pWidth, pHeight);
+
+            // Draw click ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.radius += 4;
+                r.alpha -= 0.02;
+
+                if (r.alpha <= 0) {
+                    ripples.splice(i, 1);
+                    continue;
+                }
+
+                pCtx.beginPath();
+                pCtx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                pCtx.strokeStyle = `rgba(99, 102, 241, ${r.alpha})`;
+                pCtx.lineWidth = 2;
+                pCtx.stroke();
+            }
+
+            // Draw particles & links
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > pWidth) p.vx *= -1;
+                if (p.y < 0 || p.y > pHeight) p.vy *= -1;
+
+                // Mouse attraction
+                const dx = mouse.x - p.x;
+                const dy = mouse.y - p.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 140) {
+                    p.x += dx * 0.015;
+                    p.y += dy * 0.015;
+                }
+
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                pCtx.fillStyle = `rgba(99, 102, 241, ${p.alpha})`;
+                pCtx.shadowColor = '#6366f1';
+                pCtx.shadowBlur = 6;
+                pCtx.fill();
+                pCtx.shadowBlur = 0;
+
+                // Draw lines between close particles
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const distP = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
+                    if (distP < 110) {
+                        const lineAlpha = (1 - distP / 110) * 0.25;
+                        pCtx.beginPath();
+                        pCtx.moveTo(p.x, p.y);
+                        pCtx.lineTo(p2.x, p2.y);
+                        pCtx.strokeStyle = `rgba(99, 102, 241, ${lineAlpha})`;
+                        pCtx.lineWidth = 0.8;
+                        pCtx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(renderParticles);
+        }
+        renderParticles();
+    }
+
+    // ==========================================
+    // 18. Clean Architecture Code Diff Playground
+    // ==========================================
+    const diffPresets = {
+        hook: {
+            fileName: 'useFetchData.ts',
+            legacyBadge: 'Monolithic Legacy Code ⚠️',
+            cleanBadge: 'Clean Custom Hook Pattern ⚡',
+            legacyNote: '⚠️ <strong>Problems:</strong> No abort controller (memory leaks on unmount), state mutation directly in component, duplicate fetch logic everywhere, zero type safety.',
+            cleanNote: '💡 <strong>Why it\'s better:</strong> Features automatic race-condition prevention (AbortController), memory leak cleanup on unmount, strongly typed generics, and reusable error handling.',
+            legacyCode: `// ⚠️ Legacy Monolithic Component (Messy & Buggy)
+function UserList() {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        setLoading(true);
+        fetch('https://api.example.com/users')
+            .then(res => res.json())
+            .then(data => {
+                setUsers(data); // 💥 Memory leak if unmounted!
+                setLoading(false);
+            });
+    }, []);
+
+    return <div>{users.map(u => <p>{u.name}</p>)}</div>;
+}`,
+            cleanCode: `// ⚡ Aditya's Clean Custom Hook Pattern (Robust & Type-Safe)
+import { useState, useEffect } from 'react';
+
+export function useFetchData<T>(url: string) {
+    const [data, setData] = useState<T | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        setIsLoading(true);
+
+        fetch(url, { signal: controller.signal })
+            .then(res => {
+                if (!res.ok) throw new Error(\`HTTP error! status: \${res.status}\`);
+                return res.json();
+            })
+            .then(data => { setData(data); setError(null); })
+            .catch(err => { if (err.name !== 'AbortError') setError(err); })
+            .finally(() => setIsLoading(false));
+
+        return () => controller.abort(); // 🛡️ Memory leak prevention!
+    }, [url]);
+
+    return { data, isLoading, error };
+}`
+        },
+        backend: {
+            fileName: 'UserController.js',
+            legacyBadge: 'Fat Controller Anti-Pattern ⚠️',
+            cleanBadge: 'Layered Service Repository Pattern ⚡',
+            legacyNote: '⚠️ <strong>Problems:</strong> Database queries, validation, hashing, and response logic are all smashed inside 1 monolithic route function. Untestable & fragile.',
+            cleanNote: '💡 <strong>Why it\'s better:</strong> Decouples route handlers, input validation schemas, business logic services, and database repositories. 100% unit-testable.',
+            legacyCode: `// ⚠️ Monolithic Express Handler (Fat Controller Anti-Pattern)
+app.post('/api/users', async (req, res) => {
+    if (!req.body.email || !req.body.password) return res.status(400).send('Missing fields');
+    const existing = await db.query('SELECT * FROM users WHERE email = ?', [req.body.email]);
+    if (existing.length) return res.status(409).send('User exists');
+    const hash = crypto.createHash('md5').update(req.body.password).digest('hex'); // 💥 Insecure!
+    await db.query('INSERT INTO users VALUES (?, ?)', [req.body.email, hash]);
+    res.json({ success: true });
+});`,
+            cleanCode: `// ⚡ Aditya's Layered Architecture (Service-Repository Pattern)
+class UserService {
+    constructor(private userRepository: UserRepository, private authHasher: PasswordHasher) {}
+
+    async registerUser(dto: CreateUserDto): Promise<UserResponseVo> {
+        await this.validateUniqueEmail(dto.email);
+        const passwordHash = await this.authHasher.hashPassword(dto.password);
+        const newUser = await this.userRepository.create({ email: dto.email, passwordHash });
+        return UserMapper.toResponseVO(newUser);
+    }
+
+    private async validateUniqueEmail(email: string): Promise<void> {
+        const existingUser = await this.userRepository.findByEmail(email);
+        if (existingUser) throw new ConflictException('Email already registered');
+    }
+}`
+        },
+        ml: {
+            fileName: 'IllnessDetectorPipeline.py',
+            legacyBadge: 'Scripting Garbage Code ⚠️',
+            cleanBadge: 'Modular Deep Learning CV Pipeline ⚡',
+            legacyNote: '⚠️ <strong>Problems:</strong> Hardcoded file paths, no GPU acceleration check, no logging, no exception handling, and raw unscaled tensors.',
+            cleanNote: '💡 <strong>Why it\'s better:</strong> Production-ready PyTorch/TensorFlow pipeline with automatic device assignment (CUDA/MPS/CPU), logging telemetry, and data augmentations.',
+            legacyCode: `# ⚠️ Messy Unstructured Python Script
+import cv2, keras
+model = keras.models.load_model('model.h5')
+img = cv2.imread('test.jpg')
+img = cv2.resize(img, (224, 224))
+pred = model.predict(img)
+print("Result:", pred)`,
+            cleanCode: `# ⚡ Aditya's Production Deep Learning Inference Pipeline
+import torch
+import torchvision.transforms as T
+from PIL import Image
+from typing import Dict, Any
+
+class VisionInferenceEngine:
+    def __init__(self, model_path: str, device: str = None):
+        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
+        self.model = torch.jit.load(model_path, map_location=self.device).eval()
+        self.transform = T.Compose([
+            T.Resize((224, 224)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+
+    @torch.no_grad()
+    def predict(self, image: Image.Image) -> Dict[str, Any]:
+        tensor = self.transform(image).unsqueeze(0).to(self.device)
+        logits = self.model(tensor)
+        probabilities = torch.softmax(logits, dim=1)
+        confidence, class_idx = torch.max(probabilities, dim=1)
+        return {"class_id": class_idx.item(), "confidence": round(confidence.item(), 4)}`
+        }
+    };
+
+    let currentPreset = 'hook';
+    let currentMode = 'clean';
+
+    const btnLegacy = document.getElementById('btnLegacy');
+    const btnClean = document.getElementById('btnClean');
+    const codeDisplay = document.getElementById('codeDisplay');
+    const diffFileName = document.getElementById('diffFileName');
+    const diffBadge = document.getElementById('diffBadge');
+    const diffNote = document.getElementById('diffNote');
+
+    function updateDiffDisplay() {
+        if (!codeDisplay) return;
+        const preset = diffPresets[currentPreset];
+        diffFileName.textContent = preset.fileName;
+
+        if (currentMode === 'clean') {
+            btnClean.classList.add('active');
+            btnLegacy.classList.remove('active');
+            diffBadge.textContent = preset.cleanBadge;
+            diffBadge.style.color = '#22c55e';
+            diffBadge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+            diffNote.innerHTML = preset.cleanNote;
+            codeDisplay.textContent = preset.cleanCode;
+        } else {
+            btnLegacy.classList.add('active');
+            btnClean.classList.remove('active');
+            diffBadge.textContent = preset.legacyBadge;
+            diffBadge.style.color = '#ef4444';
+            diffBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            diffNote.innerHTML = preset.legacyNote;
+            codeDisplay.textContent = preset.legacyCode;
+        }
+    }
+
+    if (btnLegacy) btnLegacy.addEventListener('click', () => { currentMode = 'legacy'; updateDiffDisplay(); });
+    if (btnClean) btnClean.addEventListener('click', () => { currentMode = 'clean'; updateDiffDisplay(); });
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPreset = btn.getAttribute('data-preset');
+            updateDiffDisplay();
+        });
+    });
+
+    updateDiffDisplay();
+
+    // ==========================================
+    // 19. Cyberpunk / Lofi Developer Audio Synthesizer
+    // ==========================================
+    const lofiWidget = document.getElementById('lofiPlayerWidget');
+    const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
+    const lofiBody = document.getElementById('lofiBody');
+    const lofiCloseBtn = document.getElementById('lofiCloseBtn');
+    const eqBars = document.getElementById('eqBars');
+    const lofiPlayBtn = document.getElementById('lofiPlayBtn');
+    const lofiPrevBtn = document.getElementById('lofiPrevBtn');
+    const lofiNextBtn = document.getElementById('lofiNextBtn');
+    const lofiTrackName = document.getElementById('lofiTrackName');
+    const lofiTrackDesc = document.getElementById('lofiTrackDesc');
+    const lofiVolume = document.getElementById('lofiVolume');
+
+    const lofiTracks = [
+        { name: 'Cyberpunk Synth Pulse', desc: 'Chill Ambient Synthesized Chords' },
+        { name: 'Rain & Storm Ambience', desc: 'Relaxing Rain & Thunder Soundscape' },
+        { name: 'Mechanical Keyboard ASMR', desc: 'Tactile Switch Typing Rhythm' }
+    ];
+
+    let currentTrackIdx = 0;
+    let isPlayingLofi = false;
+    let lofiAudioCtx = null;
+    let lofiOsc1 = null, lofiOsc2 = null, lofiGain = null, lofiNoiseNode = null;
+
+    function toggleLofiBody() {
+        if (!lofiBody) return;
+        lofiBody.classList.toggle('hidden');
+    }
+
+    if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', toggleLofiBody);
+    if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => { if (lofiBody) lofiBody.classList.add('hidden'); });
+
+    function initLofiSynth() {
+        if (!lofiAudioCtx) {
+            lofiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function startLofiSound() {
+        initLofiSynth();
+        if (!lofiAudioCtx) return;
+
+        stopLofiSound();
+
+        const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+
+        if (currentTrackIdx === 0) { // Synth Pulse
+            lofiOsc1 = lofiAudioCtx.createOscillator();
+            lofiOsc2 = lofiAudioCtx.createOscillator();
+            lofiGain = lofiAudioCtx.createGain();
+
+            lofiOsc1.type = 'sine';
+            lofiOsc1.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
+
+            lofiOsc2.type = 'triangle';
+            lofiOsc2.frequency.setValueAtTime(329.63, lofiAudioCtx.currentTime); // E4
+
+            lofiGain.gain.setValueAtTime(vol * 0.15, lofiAudioCtx.currentTime);
+
+            lofiOsc1.connect(lofiGain);
+            lofiOsc2.connect(lofiGain);
+            lofiGain.connect(lofiAudioCtx.destination);
+
+            lofiOsc1.start();
+            lofiOsc2.start();
+        } else if (currentTrackIdx === 1) { // Rain noise
+            const bufferSize = lofiAudioCtx.sampleRate * 2;
+            const buffer = lofiAudioCtx.createBuffer(1, bufferSize, lofiAudioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            lofiNoiseNode = lofiAudioCtx.createBufferSource();
+            lofiNoiseNode.buffer = buffer;
+            lofiNoiseNode.loop = true;
+
+            lofiGain = lofiAudioCtx.createGain();
+            lofiGain.gain.setValueAtTime(vol * 0.08, lofiAudioCtx.currentTime);
+
+            lofiNoiseNode.connect(lofiGain);
+            lofiGain.connect(lofiAudioCtx.destination);
+            lofiNoiseNode.start();
+        } else { // Keyboard ASMR click rhythm
+            lofiOsc1 = lofiAudioCtx.createOscillator();
+            lofiGain = lofiAudioCtx.createGain();
+            lofiOsc1.type = 'square';
+            lofiOsc1.frequency.setValueAtTime(120, lofiAudioCtx.currentTime);
+            lofiGain.gain.setValueAtTime(vol * 0.05, lofiAudioCtx.currentTime);
+
+            lofiOsc1.connect(lofiGain);
+            lofiGain.connect(lofiAudioCtx.destination);
+            lofiOsc1.start();
+        }
+
+        isPlayingLofi = true;
+        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+        if (eqBars) eqBars.classList.remove('hidden');
+    }
+
+    function stopLofiSound() {
+        if (lofiOsc1) { try { lofiOsc1.stop(); } catch(e){} lofiOsc1 = null; }
+        if (lofiOsc2) { try { lofiOsc2.stop(); } catch(e){} lofiOsc2 = null; }
+        if (lofiNoiseNode) { try { lofiNoiseNode.stop(); } catch(e){} lofiNoiseNode = null; }
+        isPlayingLofi = false;
+        if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
+        if (eqBars) eqBars.classList.add('hidden');
+    }
+
+    function toggleLofiPlay() {
+        if (isPlayingLofi) {
+            stopLofiSound();
+        } else {
+            startLofiSound();
+        }
+    }
+
+    if (lofiPlayBtn) lofiPlayBtn.addEventListener('click', toggleLofiPlay);
+
+    if (lofiNextBtn) lofiNextBtn.addEventListener('click', () => {
+        currentTrackIdx = (currentTrackIdx + 1) % lofiTracks.length;
+        updateTrackInfo();
+        if (isPlayingLofi) startLofiSound();
+    });
+
+    if (lofiPrevBtn) lofiPrevBtn.addEventListener('click', () => {
+        currentTrackIdx = (currentTrackIdx - 1 + lofiTracks.length) % lofiTracks.length;
+        updateTrackInfo();
+        if (isPlayingLofi) startLofiSound();
+    });
+
+    if (lofiVolume) lofiVolume.addEventListener('input', () => {
+        if (lofiGain && lofiAudioCtx) {
+            lofiGain.gain.setValueAtTime(parseFloat(lofiVolume.value) * 0.1, lofiAudioCtx.currentTime);
+        }
+    });
+
+    function updateTrackInfo() {
+        const track = lofiTracks[currentTrackIdx];
+        if (lofiTrackName) lofiTrackName.textContent = track.name;
+        if (lofiTrackDesc) lofiTrackDesc.textContent = track.desc;
+    }
 });
