@@ -1,36 +1,63 @@
+/* ==========================================
+   Aditya Navra Erlangga — World-Class Portfolio
+   Framer-Motion Micro-Interaction Engine
+   ========================================== */
+
 document.addEventListener('DOMContentLoaded', () => {
+
     // ==========================================
-    // 1. Futuristic Web Audio Sound FX Engine
+    // 1. Audio FX Engine (Web Audio API Synth)
     // ==========================================
     let soundEnabled = true;
     let audioCtx = null;
 
-    function initAudio() {
+    function getAudioContext() {
         if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) audioCtx = new AudioContext();
         }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
     }
 
-    function playAudioTone(freq, type = 'sine', duration = 0.08) {
+    function playHoverSound() {
         if (!soundEnabled) return;
         try {
-            initAudio();
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.05);
+            gain.gain.setValueAtTime(0.015, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
             osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            gain.connect(ctx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        } catch (e) {
-            // Audio context fallback
-        }
+            osc.stop(ctx.currentTime + 0.05);
+        } catch (e) {}
+    }
+
+    function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(520, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(260, ctx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.08);
+        } catch (e) {}
     }
 
     const soundToggleBtn = document.getElementById('soundToggleBtn');
@@ -43,227 +70,95 @@ document.addEventListener('DOMContentLoaded', () => {
             if (soundEnabled) {
                 soundOnIcon.classList.remove('hidden');
                 soundOffIcon.classList.add('hidden');
-                playAudioTone(800, 'sine', 0.1);
-                showToast('🔊 Sound Effects Enabled');
+                showToast('🔊 Sound FX Enabled');
+                playClickSound();
             } else {
                 soundOnIcon.classList.add('hidden');
                 soundOffIcon.classList.remove('hidden');
-                showToast('mMuted Sound Effects');
+                showToast('🔇 Sound FX Muted');
             }
         });
     }
 
-    // Add sound feedback to all buttons and links
-    document.querySelectorAll('.btn, .nav-link, .social-link, .filter-btn, .theme-opt, .quick-view-btn').forEach(el => {
-        el.addEventListener('mouseenter', () => playAudioTone(400, 'sine', 0.04));
-        el.addEventListener('click', () => playAudioTone(650, 'triangle', 0.08));
+    // Attach hover & click sound triggers
+    document.querySelectorAll('.btn, .nav-link, .social-link, .tilt-card, .filter-btn').forEach(el => {
+        el.addEventListener('mouseenter', playHoverSound);
+        el.addEventListener('click', playClickSound);
     });
 
     // ==========================================
-    // 2. Toast Notification System
+    // 2. Cursor Glow & Aura Spotlight Tracker (Framer Motion style)
+    // ==========================================
+    const cursorGlow = document.getElementById('cursorGlow');
+    const auraCards = document.querySelectorAll('.aura-card');
+
+    document.addEventListener('mousemove', (e) => {
+        const { clientX, clientY } = e;
+        
+        if (cursorGlow) {
+            cursorGlow.style.left = `${clientX}px`;
+            cursorGlow.style.top = `${clientY}px`;
+            cursorGlow.style.opacity = '1';
+        }
+
+        // Spotlight effect on each Aura Card
+        auraCards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+        });
+    });
+
+    // ==========================================
+    // 3. Magnetic Button Physics (Framer Motion style)
+    // ==========================================
+    const magneticBtns = document.querySelectorAll('.magnetic-btn');
+
+    magneticBtns.forEach(btn => {
+        btn.addEventListener('mousemove', (e) => {
+            const rect = btn.getBoundingClientRect();
+            const btnCenterX = rect.left + rect.width / 2;
+            const btnCenterY = rect.top + rect.height / 2;
+            const deltaX = (e.clientX - btnCenterX) * 0.35;
+            const deltaY = (e.clientY - btnCenterY) * 0.35;
+
+            btn.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+        });
+
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translate3d(0, 0, 0)';
+        });
+    });
+
+    // ==========================================
+    // 4. Toast Notification System
     // ==========================================
     function showToast(message) {
-        const toastContainer = document.getElementById('toastContainer');
-        if (!toastContainer) return;
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
 
         const toast = document.createElement('div');
         toast.className = 'toast';
-        toast.innerHTML = `<span>${message}</span>`;
-        toastContainer.appendChild(toast);
+        toast.innerHTML = message;
+
+        container.appendChild(toast);
+        playHoverSound();
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateY(20px)';
+            toast.style.transform = 'translateY(20px) scale(0.9)';
             setTimeout(() => toast.remove(), 300);
-        }, 2500);
+        }, 3000);
     }
 
     // ==========================================
-    // 3. Particle Canvas Constellation
-    // ==========================================
-    const canvas = document.getElementById('particleCanvas');
-    if (canvas) {
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        let mouse = { x: null, y: null, radius: 140 };
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.vx = (Math.random() - 0.5) * 0.8;
-                this.vy = (Math.random() - 0.5) * 0.8;
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-
-                // Mouse repulsion
-                if (mouse.x && mouse.y) {
-                    const dx = mouse.x - this.x;
-                    const dy = mouse.y - this.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < mouse.radius) {
-                        const angle = Math.atan2(dy, dx);
-                        const force = (mouse.radius - dist) / mouse.radius;
-                        this.x -= Math.cos(angle) * force * 2;
-                        this.y -= Math.sin(angle) * force * 2;
-                    }
-                }
-            }
-
-            draw() {
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function initParticles() {
-            particles = [];
-            const count = Math.min(Math.floor((canvas.width * canvas.height) / 14000), 70);
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle());
-            }
-        }
-        initParticles();
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-
-                // Draw connecting lines
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < 120) {
-                        ctx.strokeStyle = `rgba(99, 102, 241, ${0.15 * (1 - dist / 120)})`;
-                        ctx.lineWidth = 0.8;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-    }
-
-    // ==========================================
-    // 4. Cursor Glow Effect
-    // ==========================================
-    const cursorGlow = document.getElementById('cursorGlow');
-    if (cursorGlow && window.innerWidth > 768) {
-        window.addEventListener('mousemove', (e) => {
-            cursorGlow.style.left = `${e.clientX}px`;
-            cursorGlow.style.top = `${e.clientY}px`;
-            cursorGlow.style.opacity = '1';
-        });
-    }
-
-    // ==========================================
-    // 5. 3D Tilt Card Effect
-    // ==========================================
-    const tiltCards = document.querySelectorAll('.tilt-card');
-    tiltCards.forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            if (window.innerWidth <= 768) return;
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -8;
-            const rotateY = ((x - centerX) / centerX) * 8;
-
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
-        });
-
-        card.addEventListener('mouseleave', () => {
-            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)';
-        });
-    });
-
-    // ==========================================
-    // 6. Accent Color Theme Switcher
-    // ==========================================
-    const themePickerBtn = document.getElementById('themePickerBtn');
-    const themeMenu = document.getElementById('themeMenu');
-    const themeOpts = document.querySelectorAll('.theme-opt');
-
-    const themes = {
-        indigo: { hue: 243, sat: '75%', light: '59%' },
-        cyan: { hue: 189, sat: '94%', light: '43%' },
-        emerald: { hue: 160, sat: '84%', light: '39%' },
-        rose: { hue: 347, sat: '89%', light: '60%' },
-        amber: { hue: 38, sat: '92%', light: '50%' }
-    };
-
-    if (themePickerBtn && themeMenu) {
-        themePickerBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            themeMenu.classList.toggle('active');
-        });
-
-        document.addEventListener('click', () => themeMenu.classList.remove('active'));
-
-        themeOpts.forEach(opt => {
-            opt.addEventListener('click', () => {
-                const themeKey = opt.getAttribute('data-theme');
-                if (themes[themeKey]) {
-                    const { hue, sat, light } = themes[themeKey];
-                    document.documentElement.style.setProperty('--accent-hue', hue);
-                    document.documentElement.style.setProperty('--accent-sat', sat);
-                    document.documentElement.style.setProperty('--accent-light', light);
-
-                    themeOpts.forEach(o => o.classList.remove('active'));
-                    opt.classList.add('active');
-
-                    localStorage.setItem('selectedTheme', themeKey);
-                    showToast(`🎨 Theme Changed to ${themeKey.toUpperCase()}`);
-                }
-            });
-        });
-
-        // Load saved theme
-        const savedTheme = localStorage.getItem('selectedTheme');
-        if (savedTheme && themes[savedTheme]) {
-            const opt = document.querySelector(`.theme-opt[data-theme="${savedTheme}"]`);
-            if (opt) opt.click();
-        }
-    }
-
-    // ==========================================
-    // 7. Navbar Scroll & Link Highlight
+    // 5. Navbar Scroll Effect & Active Link Highlight
     // ==========================================
     const navbar = document.getElementById('navbar');
-    const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
 
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
@@ -291,36 +186,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile Navigation Toggle
     const navToggle = document.getElementById('navToggle');
-    const navMenu = document.getElementById('navLinks');
+    const navLinksContainer = document.getElementById('navLinks');
 
-    if (navToggle && navMenu) {
+    if (navToggle && navLinksContainer) {
         navToggle.addEventListener('click', () => {
-            navToggle.classList.toggle('active');
-            navMenu.classList.toggle('active');
+            navLinksContainer.classList.toggle('active');
         });
 
-        navLinks.forEach(link => {
+        document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
-                navToggle.classList.remove('active');
-                navMenu.classList.remove('active');
+                navLinksContainer.classList.remove('active');
             });
         });
     }
 
     // ==========================================
-    // 8. Typewriter Effect
+    // 6. Theme Accent Customizer
+    // ==========================================
+    const themePickerBtn = document.getElementById('themePickerBtn');
+    const themeMenu = document.getElementById('themeMenu');
+    const themeOpts = document.querySelectorAll('.theme-opt');
+
+    const themes = {
+        indigo: { hue: 243, sat: '75%', light: '59%' },
+        cyan:   { hue: 188, sat: '94%', light: '43%' },
+        emerald:{ hue: 160, sat: '84%', light: '39%' },
+        rose:   { hue: 346, sat: '87%', light: '60%' },
+        amber:  { hue: 38,  sat: '92%', light: '50%' }
+    };
+
+    if (themePickerBtn && themeMenu) {
+        themePickerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeMenu.classList.toggle('active');
+        });
+
+        document.addEventListener('click', () => {
+            themeMenu.classList.remove('active');
+        });
+    }
+
+    themeOpts.forEach(opt => {
+        opt.addEventListener('click', () => {
+            const themeKey = opt.getAttribute('data-theme');
+            const t = themes[themeKey];
+            if (!t) return;
+
+            document.documentElement.style.setProperty('--accent-hue', t.hue);
+            document.documentElement.style.setProperty('--accent-sat', t.sat);
+            document.documentElement.style.setProperty('--accent-light', t.light);
+
+            themeOpts.forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+
+            showToast(`🎨 Theme Accent: ${themeKey.toUpperCase()}`);
+        });
+    });
+
+    // ==========================================
+    // 7. Interactive 3D Card Tilt Effect
+    // ==========================================
+    const tiltCards = document.querySelectorAll('.tilt-card');
+
+    tiltCards.forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = ((y - centerY) / centerY) * -7;
+            const rotateY = ((x - centerX) / centerX) * 7;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+        });
+    });
+
+    // ==========================================
+    // 8. Typewriter Animation Engine
     // ==========================================
     const typewriter = document.getElementById('typewriter');
     const roles = [
-        'Full-Stack Web Applications',
-        'Java OOP Architecture',
-        'RESTful Services & APIs',
-        'Clean & Modular Code'
+        'Full-Stack Software Developer',
+        'Framer Motion UI Specialist',
+        'React.js & Node.js Engineer',
+        'Informatics Engineer at UAD'
     ];
     let roleIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
-    let typeSpeed = 100;
+    let typeSpeed = 90;
 
     function typeEffect() {
         if (!typewriter) return;
@@ -351,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(typeEffect, 1000);
 
     // ==========================================
-    // 9. Scroll Intersection Animations
+    // 9. Scroll Intersection Animations & Counter Animation
     // ==========================================
     const animateElements = document.querySelectorAll('[data-animate]');
     const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
@@ -362,6 +322,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const delay = entry.target.getAttribute('data-delay') || 0;
                 setTimeout(() => {
                     entry.target.classList.add('visible');
+                    
+                    // Animate skill bars inside
+                    entry.target.querySelectorAll('.skill-bar-fill').forEach(fill => {
+                        fill.classList.add('animated');
+                    });
+
+                    // Animate counters inside
+                    entry.target.querySelectorAll('.stat-number').forEach(counter => {
+                        animateCounter(counter);
+                    });
                 }, delay);
                 observer.unobserve(entry.target);
             }
@@ -369,55 +339,90 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
     animateElements.forEach(el => observer.observe(el));
 
-    // Number Counter Animation
-    const statNumbers = document.querySelectorAll('.stat-number');
-    let counted = false;
-
-    function startCounting() {
-        statNumbers.forEach(stat => {
-            const target = parseInt(stat.getAttribute('data-count'), 10);
-            let count = 0;
-            const duration = 1800;
-            const increment = target / (duration / 16);
-
-            const timer = setInterval(() => {
-                count += increment;
-                if (count >= target) {
-                    stat.textContent = target + '+';
-                    clearInterval(timer);
-                } else {
-                    stat.textContent = Math.floor(count) + '+';
-                }
-            }, 16);
-        });
-    }
-
-    const statsSection = document.querySelector('.about-stats');
-    if (statsSection) {
-        const statsObserver = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && !counted) {
-                counted = true;
-                startCounting();
+    function animateCounter(el) {
+        const target = +el.getAttribute('data-count');
+        let current = 0;
+        const increment = target / 30;
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                el.textContent = target + '+';
+                clearInterval(timer);
+            } else {
+                el.textContent = Math.ceil(current);
             }
-        }, { threshold: 0.5 });
-        statsObserver.observe(statsSection);
-    }
-
-    // Skill Bar Fill Animation
-    const skillFills = document.querySelectorAll('.skill-bar-fill');
-    const skillSection = document.querySelector('.skill-bars-container');
-
-    if (skillSection) {
-        const skillObserver = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                skillFills.forEach(fill => fill.classList.add('animated'));
-            }
-        }, { threshold: 0.3 });
-        skillObserver.observe(skillSection);
+        }, 40);
     }
 
     // ==========================================
-    // 10. Project Category Filter System
+    // 10. Interactive Particle Constellation Canvas
+    // ==========================================
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = [];
+        const particleCount = Math.min(Math.floor(width / 18), 70);
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.6,
+                vy: (Math.random() - 0.5) * 0.6,
+                radius: Math.random() * 2 + 1,
+                alpha: Math.random() * 0.5 + 0.2
+            });
+        }
+
+        function renderParticles() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(99, 102, 241, ${p.alpha})`;
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(99, 102, 241, ${0.12 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(renderParticles);
+        }
+        renderParticles();
+    }
+
+    // ==========================================
+    // 11. Project Filter Tabs
     // ==========================================
     const filterBtns = document.querySelectorAll('.filter-btn');
     const projectCards = document.querySelectorAll('.project-card');
@@ -433,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const category = card.getAttribute('data-category');
                 if (filterValue === 'all' || category === filterValue) {
                     card.classList.remove('hidden-filter');
-                    card.style.animation = 'fadeIn 0.4s ease forwards';
+                    card.style.animation = 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
                 } else {
                     card.classList.add('hidden-filter');
                 }
@@ -442,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 11. Project Quick View Modal
+    // 12. Project Quick View Modal
     // ==========================================
     const projectModal = document.getElementById('projectModal');
     const modalBackdrop = document.getElementById('modalBackdrop');
@@ -506,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
-    // 12. Interactive Say Hello / Copy Email Button
+    // 13. Interactive Say Hello / Copy Email Button
     // ==========================================
     const copyEmailBtn = document.getElementById('copyEmailBtn');
     const copyEmailBtnText = document.getElementById('copyEmailBtnText');
@@ -524,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('📋 Email copied to clipboard!');
             
             setTimeout(() => {
-                copyEmailBtnText.textContent = 'Say Hello!';
+                copyEmailBtnText.textContent = 'Contact Me';
                 copyEmailBtn.style.background = '';
             }, 2500);
 
