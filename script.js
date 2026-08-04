@@ -283,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const typewriter = document.getElementById('typewriter');
     const roles = [
         'Full-Stack Software Developer',
-        'Framer Motion UI Specialist',
         'React.js & Node.js Engineer',
         'Informatics Engineer at UAD'
     ];
