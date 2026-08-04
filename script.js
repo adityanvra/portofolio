@@ -1088,6 +1088,11 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     const lofiTracks = [
         { 
+            name: '🏰 Ghibli — Merry-Go-Round of Life', 
+            desc: "Howl's Moving Castle Theme (Joe Hisaishi)",
+            youtubeId: 'J9c81p7pUeU'
+        },
+        { 
             name: '🌊 Wave To Earth — love', 
             desc: 'Official Original Track (사랑으로)',
             youtubeId: 'Q49pnA4jsp8'
