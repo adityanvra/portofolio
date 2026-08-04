@@ -1003,8 +1003,12 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         }
         initParticles();
 
+        let audioSynesthesiaTime = 0;
+
         function renderParticles() {
             pCtx.clearRect(0, 0, pWidth, pHeight);
+
+            audioSynesthesiaTime += 0.03;
 
             // Draw click ripples
             for (let i = ripples.length - 1; i >= 0; i--) {
@@ -1024,11 +1028,30 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                 pCtx.stroke();
             }
 
+            // Synesthesia Mode 3D Audio Visualizer Waveforms
+            if (isPlayingLofi) {
+                const centerX = pWidth / 2;
+                const centerY = pHeight / 2;
+                const waveCount = 3;
+
+                for (let w = 1; w <= waveCount; w++) {
+                    const waveRadius = (Math.sin(audioSynesthesiaTime * 2 + w) * 20 + 80 * w);
+                    const hue = (audioSynesthesiaTime * 40 + w * 60) % 360;
+                    pCtx.beginPath();
+                    pCtx.arc(centerX, centerY, waveRadius, 0, Math.PI * 2);
+                    pCtx.strokeStyle = `hsla(${hue}, 90%, 65%, 0.15)`;
+                    pCtx.lineWidth = 2;
+                    pCtx.stroke();
+                }
+            }
+
             // Draw particles & links
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
+
+                const speedMult = isPlayingLofi ? 2.2 : 1.0;
+                p.x += p.vx * speedMult;
+                p.y += p.vy * speedMult;
 
                 if (p.x < 0 || p.x > pWidth) p.vx *= -1;
                 if (p.y < 0 || p.y > pHeight) p.vy *= -1;
@@ -1043,10 +1066,13 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                 }
 
                 pCtx.beginPath();
-                pCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                pCtx.fillStyle = `rgba(99, 102, 241, ${p.alpha})`;
-                pCtx.shadowColor = '#6366f1';
-                pCtx.shadowBlur = 6;
+                const radiusPulse = isPlayingLofi ? p.radius * (1 + Math.sin(audioSynesthesiaTime * 3 + i) * 0.4) : p.radius;
+                pCtx.arc(p.x, p.y, Math.max(1, radiusPulse), 0, Math.PI * 2);
+
+                const particleHue = isPlayingLofi ? (audioSynesthesiaTime * 30 + i * 5) % 360 : 243;
+                pCtx.fillStyle = isPlayingLofi ? `hsla(${particleHue}, 85%, 65%, ${p.alpha * 1.3})` : `rgba(99, 102, 241, ${p.alpha})`;
+                pCtx.shadowColor = isPlayingLofi ? `hsl(${particleHue}, 90%, 65%)` : '#6366f1';
+                pCtx.shadowBlur = isPlayingLofi ? 12 : 6;
                 pCtx.fill();
                 pCtx.shadowBlur = 0;
 
@@ -1054,13 +1080,14 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                 for (let j = i + 1; j < particles.length; j++) {
                     const p2 = particles[j];
                     const distP = Math.sqrt((p.x - p2.x) ** 2 + (p.y - p2.y) ** 2);
-                    if (distP < 110) {
-                        const lineAlpha = (1 - distP / 110) * 0.25;
+                    const linkThreshold = isPlayingLofi ? 140 : 110;
+                    if (distP < linkThreshold) {
+                        const lineAlpha = (1 - distP / linkThreshold) * (isPlayingLofi ? 0.45 : 0.25);
                         pCtx.beginPath();
                         pCtx.moveTo(p.x, p.y);
                         pCtx.lineTo(p2.x, p2.y);
-                        pCtx.strokeStyle = `rgba(99, 102, 241, ${lineAlpha})`;
-                        pCtx.lineWidth = 0.8;
+                        pCtx.strokeStyle = isPlayingLofi ? `hsla(${particleHue}, 85%, 65%, ${lineAlpha})` : `rgba(99, 102, 241, ${lineAlpha})`;
+                        pCtx.lineWidth = isPlayingLofi ? 1.2 : 0.8;
                         pCtx.stroke();
                     }
                 }
@@ -1090,7 +1117,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         { 
             name: '🏰 Ghibli — Merry-Go-Round of Life', 
             desc: "Howl's Moving Castle Theme (Joe Hisaishi)",
-            youtubeId: 'J9c81p7pUeU'
+            youtubeId: 'HMGetv40FkI' // Updated high-compatibility embedding video ID
         },
         { 
             name: '🌊 Wave To Earth — love', 
@@ -1138,11 +1165,20 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
                         ytAudioPlayer.setVolume(parseFloat(lofiVolume.value) * 100);
                     }
                 },
+                'onError': (e) => {
+                    console.log('YouTube embed error code:', e.data);
+                    // Fallback to next track or auto-recover
+                    if (currentTrackIdx === 0) {
+                        showToast('🎵 Ghibli Track Loading Fallback...');
+                        ytAudioPlayer.loadVideoById('3L7j58nBvLg');
+                    }
+                },
                 'onStateChange': (e) => {
                     if (e.data === 1) { // Playing
                         isPlayingLofi = true;
                         if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
                         if (eqBars) eqBars.classList.remove('hidden');
+                        showToast('🌌 Synesthesia Audio Visualizer Active');
                     } else if (e.data === 2 || e.data === 0) { // Paused or Ended
                         isPlayingLofi = false;
                         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
