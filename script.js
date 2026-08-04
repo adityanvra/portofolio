@@ -1085,27 +1085,24 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         { 
             name: '🌊 Wave To Earth — love', 
             desc: 'Indie Pop & Soft Lofi Vibe',
-            spotify: 'https://open.spotify.com/search/wave%20to%20earth%20love',
-            youtube: 'https://www.youtube.com/results?search_query=wave+to+earth+love'
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3'
         },
         { 
             name: '🐥 Ndarboy Gank — Kicau Mania', 
-            desc: 'Upbeat Koplo & Chirping Bird Ambience',
-            spotify: 'https://open.spotify.com/search/Ndarboy%20Gank%20Kicau%20Mania',
-            youtube: 'https://www.youtube.com/results?search_query=ndarboy+gank+kicau+mania'
+            desc: 'Upbeat Acoustic & Bird Chirps',
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=tropical-house-11354.mp3'
         },
         { 
-            name: '🌧️ Rainy Night Focus Beats', 
-            desc: 'Soothing Ambient Rain & Lo-Fi Rhythm',
-            spotify: 'https://open.spotify.com/search/lofi%20rain%20beats',
-            youtube: 'https://www.youtube.com/results?search_query=lofi+rain+beats'
+            name: '🌧️ Cozy Rain & Lo-Fi Beats', 
+            desc: 'Soothing Ambient Rain Soundscape',
+            audioUrl: 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_92425026df.mp3?filename=rain-and-thunder-16705.mp3'
         }
     ];
 
     let currentTrackIdx = 0;
     let isPlayingLofi = false;
-    let lofiAudioCtx = null;
-    let lofiOsc1 = null, lofiOsc2 = null, lofiGain = null, lofiNoiseNode = null;
+    let realAudio = new Audio();
+    realAudio.loop = true;
 
     function toggleLofiBody() {
         if (!lofiBody) return;
@@ -1115,87 +1112,23 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', toggleLofiBody);
     if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => { if (lofiBody) lofiBody.classList.add('hidden'); });
 
-    function initLofiSynth() {
-        if (!lofiAudioCtx) {
-            lofiAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    }
-
     function startLofiSound() {
-        initLofiSynth();
-        if (!lofiAudioCtx) return;
-
-        stopLofiSound();
-
-        const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
-
-        if (currentTrackIdx === 0) { // 🌊 Wave To Earth — love (Dreamy Amaj7 Indie Chord)
-            lofiOsc1 = lofiAudioCtx.createOscillator();
-            lofiOsc2 = lofiAudioCtx.createOscillator();
-            lofiGain = lofiAudioCtx.createGain();
-
-            lofiOsc1.type = 'sine';
-            lofiOsc1.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
-
-            lofiOsc2.type = 'triangle';
-            lofiOsc2.frequency.setValueAtTime(277.18, lofiAudioCtx.currentTime); // C#4
-
-            lofiGain.gain.setValueAtTime(vol * 0.14, lofiAudioCtx.currentTime);
-
-            lofiOsc1.connect(lofiGain);
-            lofiOsc2.connect(lofiGain);
-            lofiGain.connect(lofiAudioCtx.destination);
-
-            lofiOsc1.start();
-            lofiOsc2.start();
-        } else if (currentTrackIdx === 1) { // 🐥 Ndarboy Gank — Kicau Mania (Upbeat Koplo & Bird Chirps)
-            lofiOsc1 = lofiAudioCtx.createOscillator();
-            lofiOsc2 = lofiAudioCtx.createOscillator();
-            lofiGain = lofiAudioCtx.createGain();
-
-            lofiOsc1.type = 'square';
-            lofiOsc1.frequency.setValueAtTime(392, lofiAudioCtx.currentTime); // G4
-
-            lofiOsc2.type = 'sine';
-            lofiOsc2.frequency.setValueAtTime(987.77, lofiAudioCtx.currentTime); // B5 Chirp
-
-            lofiGain.gain.setValueAtTime(vol * 0.08, lofiAudioCtx.currentTime);
-
-            lofiOsc1.connect(lofiGain);
-            lofiOsc2.connect(lofiGain);
-            lofiGain.connect(lofiAudioCtx.destination);
-
-            lofiOsc1.start();
-            lofiOsc2.start();
-        } else { // 🌧️ Rainy Night Focus Beats
-            const bufferSize = lofiAudioCtx.sampleRate * 2;
-            const buffer = lofiAudioCtx.createBuffer(1, bufferSize, lofiAudioCtx.sampleRate);
-            const output = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                output[i] = Math.random() * 2 - 1;
-            }
-
-            lofiNoiseNode = lofiAudioCtx.createBufferSource();
-            lofiNoiseNode.buffer = buffer;
-            lofiNoiseNode.loop = true;
-
-            lofiGain = lofiAudioCtx.createGain();
-            lofiGain.gain.setValueAtTime(vol * 0.07, lofiAudioCtx.currentTime);
-
-            lofiNoiseNode.connect(lofiGain);
-            lofiGain.connect(lofiAudioCtx.destination);
-            lofiNoiseNode.start();
+        const track = lofiTracks[currentTrackIdx];
+        if (realAudio.src !== track.audioUrl) {
+            realAudio.src = track.audioUrl;
         }
-
-        isPlayingLofi = true;
-        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
-        if (eqBars) eqBars.classList.remove('hidden');
+        realAudio.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+        realAudio.play().then(() => {
+            isPlayingLofi = true;
+            if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+            if (eqBars) eqBars.classList.remove('hidden');
+        }).catch(err => {
+            console.log('Audio playback error:', err);
+        });
     }
 
     function stopLofiSound() {
-        if (lofiOsc1) { try { lofiOsc1.stop(); } catch(e){} lofiOsc1 = null; }
-        if (lofiOsc2) { try { lofiOsc2.stop(); } catch(e){} lofiOsc2 = null; }
-        if (lofiNoiseNode) { try { lofiNoiseNode.stop(); } catch(e){} lofiNoiseNode = null; }
+        realAudio.pause();
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1223,17 +1156,15 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         if (isPlayingLofi) startLofiSound();
     });
 
-    if (lofiVolume) lofiVolume.addEventListener('input', () => {
-        if (lofiGain && lofiAudioCtx) {
-            lofiGain.gain.setValueAtTime(parseFloat(lofiVolume.value) * 0.1, lofiAudioCtx.currentTime);
-        }
-    });
+    if (lofiVolume) {
+        lofiVolume.addEventListener('input', () => {
+            realAudio.volume = parseFloat(lofiVolume.value);
+        });
+    }
 
     function updateTrackInfo() {
         const track = lofiTracks[currentTrackIdx];
         if (lofiTrackName) lofiTrackName.textContent = track.name;
         if (lofiTrackDesc) lofiTrackDesc.textContent = track.desc;
-        if (trackSpotifyLink) trackSpotifyLink.href = track.spotify;
-        if (trackYoutubeLink) trackYoutubeLink.href = track.youtube;
     }
 });
