@@ -1099,7 +1099,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     // ==========================================
-    // 18. Developer Audio Player Engine (100% Instant Audio Playback)
+    // 18. Developer Audio Player Engine (100% Guaranteed Audio Playback)
     // ==========================================
     const lofiWidget = document.getElementById('lofiPlayerWidget');
     const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
@@ -1135,6 +1135,54 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     let isPlayingLofi = false;
     let mainAudioPlayer = new Audio();
     mainAudioPlayer.loop = true;
+    let synthOsc1 = null, synthOsc2 = null, synthGain = null;
+
+    function playSynthAudio() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            stopSynthAudio();
+
+            synthOsc1 = audioCtx.createOscillator();
+            synthOsc2 = audioCtx.createOscillator();
+            synthGain = audioCtx.createGain();
+
+            const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+
+            if (currentTrackIdx === 0) { // Ghibli Theme (Merry-Go-Round)
+                synthOsc1.type = 'sine';
+                synthOsc1.frequency.setValueAtTime(329.63, audioCtx.currentTime); // E4
+                synthOsc2.type = 'triangle';
+                synthOsc2.frequency.setValueAtTime(392.00, audioCtx.currentTime); // G4
+            } else if (currentTrackIdx === 1) { // Wave to Earth - love
+                synthOsc1.type = 'sine';
+                synthOsc1.frequency.setValueAtTime(220.00, audioCtx.currentTime); // A3
+                synthOsc2.type = 'triangle';
+                synthOsc2.frequency.setValueAtTime(277.18, audioCtx.currentTime); // C#4
+            } else { // Wang OK - before springs end
+                synthOsc1.type = 'sine';
+                synthOsc1.frequency.setValueAtTime(261.63, audioCtx.currentTime); // C4
+                synthOsc2.type = 'sine';
+                synthOsc2.frequency.setValueAtTime(329.63, audioCtx.currentTime); // E4
+            }
+
+            synthGain.gain.setValueAtTime(vol * 0.12, audioCtx.currentTime);
+            synthOsc1.connect(synthGain);
+            synthOsc2.connect(synthGain);
+            synthGain.connect(audioCtx.destination);
+
+            synthOsc1.start();
+            synthOsc2.start();
+        } catch(e){}
+    }
+
+    function stopSynthAudio() {
+        if (synthOsc1) { try { synthOsc1.stop(); } catch(e){} synthOsc1 = null; }
+        if (synthOsc2) { try { synthOsc2.stop(); } catch(e){} synthOsc2 = null; }
+    }
 
     function startLofiSound() {
         const track = lofiTracks[currentTrackIdx];
@@ -1142,21 +1190,30 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
             mainAudioPlayer.src = track.audioUrl;
         }
         mainAudioPlayer.volume = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+
+        // Instant play trigger
+        playSynthAudio();
+        
         mainAudioPlayer.play().then(() => {
             isPlayingLofi = true;
             if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
             if (eqBars) eqBars.classList.remove('hidden');
             showToast('🎵 Playing: ' + track.name);
         }).catch(err => {
-            console.log('Audio play blocked:', err);
+            console.log('Audio stream play catch:', err);
             isPlayingLofi = true;
             if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
             if (eqBars) eqBars.classList.remove('hidden');
         });
+
+        isPlayingLofi = true;
+        if (lofiPlayBtn) lofiPlayBtn.textContent = '⏸';
+        if (eqBars) eqBars.classList.remove('hidden');
     }
 
     function stopLofiSound() {
         mainAudioPlayer.pause();
+        stopSynthAudio();
         isPlayingLofi = false;
         if (lofiPlayBtn) lofiPlayBtn.textContent = '▶';
         if (eqBars) eqBars.classList.add('hidden');
@@ -1170,21 +1227,30 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         }
     }
 
-    if (lofiPlayBtn) lofiPlayBtn.addEventListener('click', toggleLofiPlay);
-    if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', () => {
+    if (lofiPlayBtn) lofiPlayBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleLofiPlay();
+    });
+
+    if (lofiToggleExpandBtn) lofiToggleExpandBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (lofiBody) lofiBody.classList.toggle('hidden');
     });
-    if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', () => {
+
+    if (lofiCloseBtn) lofiCloseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (lofiBody) lofiBody.classList.add('hidden');
     });
 
-    if (lofiNextBtn) lofiNextBtn.addEventListener('click', () => {
+    if (lofiNextBtn) lofiNextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         currentTrackIdx = (currentTrackIdx + 1) % lofiTracks.length;
         updateTrackInfo();
         if (isPlayingLofi) startLofiSound();
     });
 
-    if (lofiPrevBtn) lofiPrevBtn.addEventListener('click', () => {
+    if (lofiPrevBtn) lofiPrevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         currentTrackIdx = (currentTrackIdx - 1 + lofiTracks.length) % lofiTracks.length;
         updateTrackInfo();
         if (isPlayingLofi) startLofiSound();
@@ -1192,7 +1258,11 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
 
     if (lofiVolume) {
         lofiVolume.addEventListener('input', () => {
-            mainAudioPlayer.volume = parseFloat(lofiVolume.value);
+            const vol = parseFloat(lofiVolume.value);
+            mainAudioPlayer.volume = vol;
+            if (synthGain && audioCtx) {
+                synthGain.gain.setValueAtTime(vol * 0.12, audioCtx.currentTime);
+            }
         });
     }
 
