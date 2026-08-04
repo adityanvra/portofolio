@@ -41,7 +41,6 @@
                     <a href="#experience" class="nav-link">Experience</a>
                     <a href="#skills" class="nav-link">Skills</a>
                     <a href="#projects" class="nav-link">Projects</a>
-                    <a href="#architecture" class="nav-link">Architecture</a>
                     <a href="#contact" class="nav-link">Contact</a>
                 </div>
 
@@ -616,46 +615,6 @@
                     <span>View All Repositories on GitHub</span>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Clean Architecture & Code Quality Playground -->
-    <section class="section code-playground" id="architecture">
-        <div class="container">
-            <div class="section-header" data-animate="fade-up">
-                <span class="section-label">05. Engineering & Code Quality</span>
-                <h2 class="section-title">Clean Code <span class="gradient-text">Playground</span></h2>
-                <p class="section-subtext">Compare legacy monolithic code vs Aditya's clean, modular & scalable architecture.</p>
-            </div>
-
-            <div class="code-diff-card aura-card tilt-card" data-animate="fade-up">
-                <div class="code-diff-header">
-                    <div class="code-presets">
-                        <button class="preset-btn active" data-preset="hook">React Custom Hook</button>
-                        <button class="preset-btn" data-preset="backend">Node/Hapi Controller</button>
-                        <button class="preset-btn" data-preset="ml">Machine Learning Pipeline</button>
-                    </div>
-
-                    <div class="diff-toggle-wrapper">
-                        <span class="toggle-label">Mode:</span>
-                        <div class="diff-toggle-btns">
-                            <button class="diff-mode-btn" id="btnLegacy">Legacy Code ⚠️</button>
-                            <button class="diff-mode-btn active" id="btnClean">Aditya's Clean Architecture ⚡</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="code-diff-body">
-                    <div class="code-editor-header">
-                        <span class="file-name" id="diffFileName">useFetchData.ts</span>
-                        <span class="code-badge" id="diffBadge">Clean Custom Hook Pattern</span>
-                    </div>
-                    <pre class="code-block"><code id="codeDisplay"></code></pre>
-                    <div class="diff-note" id="diffNote">
-                        💡 <strong>Why it's better:</strong> Features automatic race-condition prevention, memory leak cleanup on unmount, strongly typed generics, and reusable error handling.
-                    </div>
-                </div>
             </div>
         </div>
     </section>

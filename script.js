@@ -1066,180 +1066,7 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     }
 
     // ==========================================
-    // 18. Clean Architecture Code Diff Playground
-    // ==========================================
-    const diffPresets = {
-        hook: {
-            fileName: 'useFetchData.ts',
-            legacyBadge: 'Monolithic Legacy Code ⚠️',
-            cleanBadge: 'Clean Custom Hook Pattern ⚡',
-            legacyNote: '⚠️ <strong>Problems:</strong> No abort controller (memory leaks on unmount), state mutation directly in component, duplicate fetch logic everywhere, zero type safety.',
-            cleanNote: '💡 <strong>Why it\'s better:</strong> Features automatic race-condition prevention (AbortController), memory leak cleanup on unmount, strongly typed generics, and reusable error handling.',
-            legacyCode: `// ⚠️ Legacy Monolithic Component (Messy & Buggy)
-function UserList() {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        setLoading(true);
-        fetch('https://api.example.com/users')
-            .then(res => res.json())
-            .then(data => {
-                setUsers(data); // 💥 Memory leak if unmounted!
-                setLoading(false);
-            });
-    }, []);
-
-    return <div>{users.map(u => <p>{u.name}</p>)}</div>;
-}`,
-            cleanCode: `// ⚡ Aditya's Clean Custom Hook Pattern (Robust & Type-Safe)
-import { useState, useEffect } from 'react';
-
-export function useFetchData<T>(url: string) {
-    const [data, setData] = useState<T | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-    const [error, setError] = useState<Error | null>(null);
-
-    useEffect(() => {
-        const controller = new AbortController();
-        setIsLoading(true);
-
-        fetch(url, { signal: controller.signal })
-            .then(res => {
-                if (!res.ok) throw new Error(\`HTTP error! status: \${res.status}\`);
-                return res.json();
-            })
-            .then(data => { setData(data); setError(null); })
-            .catch(err => { if (err.name !== 'AbortError') setError(err); })
-            .finally(() => setIsLoading(false));
-
-        return () => controller.abort(); // 🛡️ Memory leak prevention!
-    }, [url]);
-
-    return { data, isLoading, error };
-}`
-        },
-        backend: {
-            fileName: 'UserController.js',
-            legacyBadge: 'Fat Controller Anti-Pattern ⚠️',
-            cleanBadge: 'Layered Service Repository Pattern ⚡',
-            legacyNote: '⚠️ <strong>Problems:</strong> Database queries, validation, hashing, and response logic are all smashed inside 1 monolithic route function. Untestable & fragile.',
-            cleanNote: '💡 <strong>Why it\'s better:</strong> Decouples route handlers, input validation schemas, business logic services, and database repositories. 100% unit-testable.',
-            legacyCode: `// ⚠️ Monolithic Express Handler (Fat Controller Anti-Pattern)
-app.post('/api/users', async (req, res) => {
-    if (!req.body.email || !req.body.password) return res.status(400).send('Missing fields');
-    const existing = await db.query('SELECT * FROM users WHERE email = ?', [req.body.email]);
-    if (existing.length) return res.status(409).send('User exists');
-    const hash = crypto.createHash('md5').update(req.body.password).digest('hex'); // 💥 Insecure!
-    await db.query('INSERT INTO users VALUES (?, ?)', [req.body.email, hash]);
-    res.json({ success: true });
-});`,
-            cleanCode: `// ⚡ Aditya's Layered Architecture (Service-Repository Pattern)
-class UserService {
-    constructor(private userRepository: UserRepository, private authHasher: PasswordHasher) {}
-
-    async registerUser(dto: CreateUserDto): Promise<UserResponseVo> {
-        await this.validateUniqueEmail(dto.email);
-        const passwordHash = await this.authHasher.hashPassword(dto.password);
-        const newUser = await this.userRepository.create({ email: dto.email, passwordHash });
-        return UserMapper.toResponseVO(newUser);
-    }
-
-    private async validateUniqueEmail(email: string): Promise<void> {
-        const existingUser = await this.userRepository.findByEmail(email);
-        if (existingUser) throw new ConflictException('Email already registered');
-    }
-}`
-        },
-        ml: {
-            fileName: 'IllnessDetectorPipeline.py',
-            legacyBadge: 'Scripting Garbage Code ⚠️',
-            cleanBadge: 'Modular Deep Learning CV Pipeline ⚡',
-            legacyNote: '⚠️ <strong>Problems:</strong> Hardcoded file paths, no GPU acceleration check, no logging, no exception handling, and raw unscaled tensors.',
-            cleanNote: '💡 <strong>Why it\'s better:</strong> Production-ready PyTorch/TensorFlow pipeline with automatic device assignment (CUDA/MPS/CPU), logging telemetry, and data augmentations.',
-            legacyCode: `# ⚠️ Messy Unstructured Python Script
-import cv2, keras
-model = keras.models.load_model('model.h5')
-img = cv2.imread('test.jpg')
-img = cv2.resize(img, (224, 224))
-pred = model.predict(img)
-print("Result:", pred)`,
-            cleanCode: `# ⚡ Aditya's Production Deep Learning Inference Pipeline
-import torch
-import torchvision.transforms as T
-from PIL import Image
-from typing import Dict, Any
-
-class VisionInferenceEngine:
-    def __init__(self, model_path: str, device: str = None):
-        self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = torch.jit.load(model_path, map_location=self.device).eval()
-        self.transform = T.Compose([
-            T.Resize((224, 224)),
-            T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-
-    @torch.no_grad()
-    def predict(self, image: Image.Image) -> Dict[str, Any]:
-        tensor = self.transform(image).unsqueeze(0).to(self.device)
-        logits = self.model(tensor)
-        probabilities = torch.softmax(logits, dim=1)
-        confidence, class_idx = torch.max(probabilities, dim=1)
-        return {"class_id": class_idx.item(), "confidence": round(confidence.item(), 4)}`
-        }
-    };
-
-    let currentPreset = 'hook';
-    let currentMode = 'clean';
-
-    const btnLegacy = document.getElementById('btnLegacy');
-    const btnClean = document.getElementById('btnClean');
-    const codeDisplay = document.getElementById('codeDisplay');
-    const diffFileName = document.getElementById('diffFileName');
-    const diffBadge = document.getElementById('diffBadge');
-    const diffNote = document.getElementById('diffNote');
-
-    function updateDiffDisplay() {
-        if (!codeDisplay) return;
-        const preset = diffPresets[currentPreset];
-        diffFileName.textContent = preset.fileName;
-
-        if (currentMode === 'clean') {
-            btnClean.classList.add('active');
-            btnLegacy.classList.remove('active');
-            diffBadge.textContent = preset.cleanBadge;
-            diffBadge.style.color = '#22c55e';
-            diffBadge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
-            diffNote.innerHTML = preset.cleanNote;
-            codeDisplay.textContent = preset.cleanCode;
-        } else {
-            btnLegacy.classList.add('active');
-            btnClean.classList.remove('active');
-            diffBadge.textContent = preset.legacyBadge;
-            diffBadge.style.color = '#ef4444';
-            diffBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-            diffNote.innerHTML = preset.legacyNote;
-            codeDisplay.textContent = preset.legacyCode;
-        }
-    }
-
-    if (btnLegacy) btnLegacy.addEventListener('click', () => { currentMode = 'legacy'; updateDiffDisplay(); });
-    if (btnClean) btnClean.addEventListener('click', () => { currentMode = 'clean'; updateDiffDisplay(); });
-
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentPreset = btn.getAttribute('data-preset');
-            updateDiffDisplay();
-        });
-    });
-
-    updateDiffDisplay();
-
-    // ==========================================
-    // 19. Cyberpunk / Lofi Developer Audio Synthesizer
+    // 18. Cyberpunk / Lofi Developer Audio Synthesizer
     // ==========================================
     const lofiWidget = document.getElementById('lofiPlayerWidget');
     const lofiToggleExpandBtn = document.getElementById('lofiToggleExpandBtn');
@@ -1254,9 +1081,9 @@ class VisionInferenceEngine:
     const lofiVolume = document.getElementById('lofiVolume');
 
     const lofiTracks = [
-        { name: 'Cyberpunk Synth Pulse', desc: 'Chill Ambient Synthesized Chords' },
-        { name: 'Rain & Storm Ambience', desc: 'Relaxing Rain & Thunder Soundscape' },
-        { name: 'Mechanical Keyboard ASMR', desc: 'Tactile Switch Typing Rhythm' }
+        { name: '🎵 Lofi Chill Hop Beats', desc: 'Warm Synthesized Ambient Chords & Vinyl Rhythm' },
+        { name: '🌧️ Rainy Night Coffee Shop', desc: 'Soothing Rain & Coziness Soundscape' },
+        { name: '✨ Midnight Cyber Ambient', desc: 'Relaxing Deep Space Synth Wave Pads' }
     ];
 
     let currentTrackIdx = 0;
@@ -1286,18 +1113,18 @@ class VisionInferenceEngine:
 
         const vol = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
 
-        if (currentTrackIdx === 0) { // Synth Pulse
+        if (currentTrackIdx === 0) { // Lofi Chill Hop Beats
             lofiOsc1 = lofiAudioCtx.createOscillator();
             lofiOsc2 = lofiAudioCtx.createOscillator();
             lofiGain = lofiAudioCtx.createGain();
 
             lofiOsc1.type = 'sine';
-            lofiOsc1.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
+            lofiOsc1.frequency.setValueAtTime(261.63, lofiAudioCtx.currentTime); // C4
 
             lofiOsc2.type = 'triangle';
             lofiOsc2.frequency.setValueAtTime(329.63, lofiAudioCtx.currentTime); // E4
 
-            lofiGain.gain.setValueAtTime(vol * 0.15, lofiAudioCtx.currentTime);
+            lofiGain.gain.setValueAtTime(vol * 0.12, lofiAudioCtx.currentTime);
 
             lofiOsc1.connect(lofiGain);
             lofiOsc2.connect(lofiGain);
@@ -1305,7 +1132,7 @@ class VisionInferenceEngine:
 
             lofiOsc1.start();
             lofiOsc2.start();
-        } else if (currentTrackIdx === 1) { // Rain noise
+        } else if (currentTrackIdx === 1) { // Rainy Night Coffee Shop
             const bufferSize = lofiAudioCtx.sampleRate * 2;
             const buffer = lofiAudioCtx.createBuffer(1, bufferSize, lofiAudioCtx.sampleRate);
             const output = buffer.getChannelData(0);
@@ -1318,21 +1145,30 @@ class VisionInferenceEngine:
             lofiNoiseNode.loop = true;
 
             lofiGain = lofiAudioCtx.createGain();
-            lofiGain.gain.setValueAtTime(vol * 0.08, lofiAudioCtx.currentTime);
+            lofiGain.gain.setValueAtTime(vol * 0.07, lofiAudioCtx.currentTime);
 
             lofiNoiseNode.connect(lofiGain);
             lofiGain.connect(lofiAudioCtx.destination);
             lofiNoiseNode.start();
-        } else { // Keyboard ASMR click rhythm
+        } else { // Midnight Cyber Ambient
             lofiOsc1 = lofiAudioCtx.createOscillator();
+            lofiOsc2 = lofiAudioCtx.createOscillator();
             lofiGain = lofiAudioCtx.createGain();
-            lofiOsc1.type = 'square';
-            lofiOsc1.frequency.setValueAtTime(120, lofiAudioCtx.currentTime);
-            lofiGain.gain.setValueAtTime(vol * 0.05, lofiAudioCtx.currentTime);
+
+            lofiOsc1.type = 'sine';
+            lofiOsc1.frequency.setValueAtTime(146.83, lofiAudioCtx.currentTime); // D3
+
+            lofiOsc2.type = 'sine';
+            lofiOsc2.frequency.setValueAtTime(220, lofiAudioCtx.currentTime); // A3
+
+            lofiGain.gain.setValueAtTime(vol * 0.1, lofiAudioCtx.currentTime);
 
             lofiOsc1.connect(lofiGain);
+            lofiOsc2.connect(lofiGain);
             lofiGain.connect(lofiAudioCtx.destination);
+
             lofiOsc1.start();
+            lofiOsc2.start();
         }
 
         isPlayingLofi = true;
