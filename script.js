@@ -545,4 +545,349 @@ document.addEventListener('DOMContentLoaded', () => {
             window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`, '_blank');
         });
     }
+
+    // ==========================================
+    // 14. Interactive Dev CLI Terminal Simulator
+    // ==========================================
+    const cliTerminalModal = document.getElementById('cliTerminalModal');
+    const cliBackdrop = document.getElementById('cliBackdrop');
+    const cliCloseBtn = document.getElementById('cliCloseBtn');
+    const terminalToggleBtn = document.getElementById('terminalToggleBtn');
+    const cliForm = document.getElementById('cliForm');
+    const cliInput = document.getElementById('cliInput');
+    const cliOutputBuffer = document.getElementById('cliOutputBuffer');
+    const cliBody = document.getElementById('cliBody');
+
+    function openTerminal() {
+        if (!cliTerminalModal) return;
+        cliTerminalModal.classList.add('active');
+        cliTerminalModal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => { if (cliInput) cliInput.focus(); }, 100);
+    }
+
+    function closeTerminal() {
+        if (!cliTerminalModal) return;
+        cliTerminalModal.classList.remove('active');
+        cliTerminalModal.setAttribute('aria-hidden', 'true');
+    }
+
+    if (terminalToggleBtn) terminalToggleBtn.addEventListener('click', openTerminal);
+    if (cliCloseBtn) cliCloseBtn.addEventListener('click', closeTerminal);
+    if (cliBackdrop) cliBackdrop.addEventListener('click', closeTerminal);
+
+    const commands = {
+        help: `Available Commands:
+  • <span class="cli-code">about</span>      - Learn about Aditya Navra Erlangga
+  • <span class="cli-code">skills</span>     - View technical stack & proficiency
+  • <span class="cli-code">projects</span>   - List featured masterpiece projects
+  • <span class="cli-code">experience</span> - View career & education timeline
+  • <span class="cli-code">contact</span>    - View contact details & social links
+  • <span class="cli-code">snake</span>      - Launch Retro Arcade Snake game 🐍
+  • <span class="cli-code">matrix</span>     - Enter Full-Screen Matrix Digital Rain 🟢
+  • <span class="cli-code">clear</span>      - Clear terminal screen`,
+        about: `Aditya Navra Erlangga — Software Developer & Informatics Engineering Student at Ahmad Dahlan University.
+Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React.js, Node.js, TypeScript, RESTful Cloud APIs, and modern Web Architecture.`,
+        skills: `Technical Stack:
+  • Frontend: JavaScript, TypeScript, React.js, Next.js, HTML5, CSS3, Framer Motion
+  • Backend: Node.js, Express.js, Hapi.js, PHP, RESTful APIs
+  • Databases: MySQL, MongoDB, PostgreSQL, SQLite
+  • Tools: Git, GitHub, Figma, Postman, Vercel, Netlify, Railway`,
+        projects: `Featured Projects:
+  1. illdetect — Capstone Project (ML Illness Detection) -> https://capstone-cc25-cf225.netlify.app
+  2. sipesda — Information System (Data Management) -> https://github.com/adityanvra/sipesda-rpl
+  3. sigchain — Signature Verification System -> https://github.com/adityanvra/sigchain
+  4. sitrukan — SME Organizational Platform -> https://github.com/adityanvra/sitrukan`,
+        experience: `Timeline:
+  • Jul 2025 – Jan 2026: Full Stack Developer Intern at Trisya Media Teknologi (Surakarta, Remote)
+  • Feb 2025 – Jul 2025: Full Stack Developer Intern at Coding Camp powered by DBS Foundation (Graduated)
+  • 2022 – Present: Freelance Web Developer for SME Clients
+  • Sep 2022 – Present: B.S. in Informatics at Ahmad Dahlan University`,
+        contact: `Contact Details:
+  • Email: adityanavra567@gmail.com
+  • WhatsApp: +62 813-6068-4756
+  • GitHub: https://github.com/adityanvra
+  • LinkedIn: https://www.linkedin.com/in/adityanavra/
+  • Instagram: https://www.instagram.com/qdityanvra_/`,
+        sudo: `[GRANT] Access granted: You are logged in as Aditya's Guest VIP!`
+    };
+
+    function processCommand(cmdRaw) {
+        const cmd = cmdRaw.trim().toLowerCase();
+        if (!cmd) return;
+
+        const line = document.createElement('div');
+        line.className = 'cli-output-line';
+
+        if (cmd === 'clear') {
+            cliOutputBuffer.innerHTML = '';
+            return;
+        } else if (cmd === 'matrix') {
+            closeTerminal();
+            startMatrixRain();
+            return;
+        } else if (cmd === 'snake') {
+            closeTerminal();
+            openSnakeGame();
+            return;
+        } else if (commands[cmd]) {
+            line.innerHTML = `<p class="cmd-entered">$ ${cmdRaw}</p><div class="cmd-response">${commands[cmd]}</div>`;
+        } else {
+            line.innerHTML = `<p class="cmd-entered">$ ${cmdRaw}</p><p style="color: #ef4444;">Command not found: '${cmdRaw}'. Type <span class="cli-code">help</span> for assistance.</p>`;
+        }
+
+        cliOutputBuffer.appendChild(line);
+        cliBody.scrollTop = cliBody.scrollHeight;
+    }
+
+    if (cliForm && cliInput) {
+        cliForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const value = cliInput.value;
+            processCommand(value);
+            cliInput.value = '';
+        });
+    }
+
+    document.querySelectorAll('.cli-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cmd = chip.getAttribute('data-cmd');
+            if (cmd) {
+                openTerminal();
+                processCommand(cmd);
+            }
+        });
+    });
+
+    // ==========================================
+    // 15. Retro Arcade Snake Mini-Game Engine
+    // ==========================================
+    const snakeGameModal = document.getElementById('snakeGameModal');
+    const gameToggleBtn = document.getElementById('gameToggleBtn');
+    const snakeCloseBtn = document.getElementById('snakeCloseBtn');
+    const snakeBackdrop = document.getElementById('snakeBackdrop');
+    const snakeCanvas = document.getElementById('snakeCanvas');
+    const snakeScoreEl = document.getElementById('snakeScore');
+    const snakeHighScoreEl = document.getElementById('snakeHighScore');
+    const snakeGameOverOverlay = document.getElementById('snakeGameOverOverlay');
+    const finalScoreEl = document.getElementById('finalScore');
+    const snakeRestartBtn = document.getElementById('snakeRestartBtn');
+
+    let snakeCtx = snakeCanvas ? snakeCanvas.getContext('2d') : null;
+    let snakeGridSize = 20;
+    let snakeTileCount = 20;
+    let snake = [{ x: 10, y: 10 }];
+    let food = { x: 15, y: 15 };
+    let dx = 1, dy = 0;
+    let score = 0;
+    let highScore = localStorage.getItem('snakeHighScore') || 0;
+    let gameLoopInterval = null;
+    let isGameOver = false;
+
+    if (snakeHighScoreEl) snakeHighScoreEl.textContent = highScore;
+
+    function openSnakeGame() {
+        if (!snakeGameModal) return;
+        snakeGameModal.classList.add('active');
+        snakeGameModal.setAttribute('aria-hidden', 'false');
+        resetSnakeGame();
+        startSnakeLoop();
+    }
+
+    function closeSnakeGame() {
+        if (!snakeGameModal) return;
+        snakeGameModal.classList.remove('active');
+        snakeGameModal.setAttribute('aria-hidden', 'true');
+        clearInterval(gameLoopInterval);
+    }
+
+    if (gameToggleBtn) gameToggleBtn.addEventListener('click', openSnakeGame);
+    if (snakeCloseBtn) snakeCloseBtn.addEventListener('click', closeSnakeGame);
+    if (snakeBackdrop) snakeBackdrop.addEventListener('click', closeSnakeGame);
+    if (snakeRestartBtn) snakeRestartBtn.addEventListener('click', () => {
+        resetSnakeGame();
+        startSnakeLoop();
+    });
+
+    function resetSnakeGame() {
+        snake = [{ x: 10, y: 10 }, { x: 9, y: 10 }, { x: 8, y: 10 }];
+        dx = 1; dy = 0;
+        score = 0;
+        isGameOver = false;
+        if (snakeScoreEl) snakeScoreEl.textContent = score;
+        if (snakeGameOverOverlay) snakeGameOverOverlay.classList.add('hidden');
+        generateFood();
+    }
+
+    function generateFood() {
+        food.x = Math.floor(Math.random() * snakeTileCount);
+        food.y = Math.floor(Math.random() * snakeTileCount);
+    }
+
+    function startSnakeLoop() {
+        clearInterval(gameLoopInterval);
+        gameLoopInterval = setInterval(updateSnake, 110);
+    }
+
+    function updateSnake() {
+        if (isGameOver || !snakeCtx) return;
+
+        const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+        // Grid collision check
+        if (head.x < 0 || head.x >= snakeTileCount || head.y < 0 || head.y >= snakeTileCount) {
+            triggerGameOver();
+            return;
+        }
+
+        // Self collision check
+        for (let i = 0; i < snake.length; i++) {
+            if (snake[i].x === head.x && snake[i].y === head.y) {
+                triggerGameOver();
+                return;
+            }
+        }
+
+        snake.unshift(head);
+
+        // Check if ate food
+        if (head.x === food.x && head.y === food.y) {
+            score += 10;
+            if (snakeScoreEl) snakeScoreEl.textContent = score;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('snakeHighScore', highScore);
+                if (snakeHighScoreEl) snakeHighScoreEl.textContent = highScore;
+            }
+            playHoverSound();
+            generateFood();
+        } else {
+            snake.pop();
+        }
+
+        renderSnakeGame();
+    }
+
+    function renderSnakeGame() {
+        if (!snakeCtx) return;
+        snakeCtx.fillStyle = '#050508';
+        snakeCtx.fillRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+
+        // Draw grid lines
+        snakeCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+        snakeCtx.lineWidth = 1;
+        for (let i = 0; i < snakeCanvas.width; i += snakeGridSize) {
+            snakeCtx.beginPath();
+            snakeCtx.moveTo(i, 0); snakeCtx.lineTo(i, snakeCanvas.height);
+            snakeCtx.moveTo(0, i); snakeCtx.lineTo(snakeCanvas.width, i);
+            snakeCtx.stroke();
+        }
+
+        // Draw food
+        snakeCtx.fillStyle = '#ef4444';
+        snakeCtx.shadowColor = '#ef4444';
+        snakeCtx.shadowBlur = 12;
+        snakeCtx.fillRect(food.x * snakeGridSize + 2, food.y * snakeGridSize + 2, snakeGridSize - 4, snakeGridSize - 4);
+        snakeCtx.shadowBlur = 0;
+
+        // Draw snake
+        snake.forEach((part, index) => {
+            if (index === 0) {
+                snakeCtx.fillStyle = '#22c55e';
+                snakeCtx.shadowColor = '#22c55e';
+                snakeCtx.shadowBlur = 10;
+            } else {
+                snakeCtx.fillStyle = 'rgba(34, 197, 94, 0.7)';
+                snakeCtx.shadowBlur = 0;
+            }
+            snakeCtx.fillRect(part.x * snakeGridSize + 1, part.y * snakeGridSize + 1, snakeGridSize - 2, snakeGridSize - 2);
+        });
+        snakeCtx.shadowBlur = 0;
+    }
+
+    function triggerGameOver() {
+        isGameOver = true;
+        clearInterval(gameLoopInterval);
+        playClickSound();
+        if (finalScoreEl) finalScoreEl.textContent = score;
+        if (snakeGameOverOverlay) snakeGameOverOverlay.classList.remove('hidden');
+    }
+
+    // Keyboard Controls for Snake
+    document.addEventListener('keydown', (e) => {
+        if (!snakeGameModal || !snakeGameModal.classList.contains('active')) return;
+        if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && dy === 0) { dx = 0; dy = -1; }
+        else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && dy === 0) { dx = 0; dy = 1; }
+        else if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && dx === 0) { dx = -1; dy = 0; }
+        else if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && dx === 0) { dx = 1; dy = 0; }
+    });
+
+    // Touch D-Pad Controls
+    const dpadUp = document.getElementById('dpadUp');
+    const dpadDown = document.getElementById('dpadDown');
+    const dpadLeft = document.getElementById('dpadLeft');
+    const dpadRight = document.getElementById('dpadRight');
+    const dpadReset = document.getElementById('dpadReset');
+
+    if (dpadUp) dpadUp.addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -1; } });
+    if (dpadDown) dpadDown.addEventListener('click', () => { if (dy === 0) { dx = 0; dy = 1; } });
+    if (dpadLeft) dpadLeft.addEventListener('click', () => { if (dx === 0) { dx = -1; dy = 0; } });
+    if (dpadRight) dpadRight.addEventListener('click', () => { if (dx === 0) { dx = 1; dy = 0; } });
+    if (dpadReset) dpadReset.addEventListener('click', resetSnakeGame);
+
+    // ==========================================
+    // 16. Full-Screen Matrix Digital Rain Canvas
+    // ==========================================
+    const matrixOverlay = document.getElementById('matrixOverlay');
+    const matrixCanvas = document.getElementById('matrixCanvas');
+    const matrixExitBtn = document.getElementById('matrixExitBtn');
+    let matrixCtx = matrixCanvas ? matrixCanvas.getContext('2d') : null;
+    let matrixInterval = null;
+
+    function startMatrixRain() {
+        if (!matrixOverlay || !matrixCanvas || !matrixCtx) return;
+        matrixOverlay.classList.remove('hidden');
+
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+
+        const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ<>/{}[]+=*#';
+        const fontSize = 16;
+        const columns = Math.floor(matrixCanvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        clearInterval(matrixInterval);
+        matrixInterval = setInterval(() => {
+            matrixCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+
+            matrixCtx.fillStyle = '#0f0';
+            matrixCtx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }, 33);
+    }
+
+    function stopMatrixRain() {
+        if (!matrixOverlay) return;
+        matrixOverlay.classList.add('hidden');
+        clearInterval(matrixInterval);
+    }
+
+    if (matrixExitBtn) matrixExitBtn.addEventListener('click', stopMatrixRain);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && matrixOverlay && !matrixOverlay.classList.contains('hidden')) {
+            stopMatrixRain();
+        }
+        if (e.shiftKey && (e.key === 'M' || e.key === 'm')) {
+            startMatrixRain();
+        }
+    });
 });
