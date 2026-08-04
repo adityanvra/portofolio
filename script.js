@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
     let soundEnabled = true;
     let audioCtx = null;
+    let isPlayingLofi = false; // Shared state: used by both Particle Engine and Audio Player
 
     function getAudioContext() {
         if (!audioCtx) {
@@ -1132,7 +1133,6 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
     ];
 
     let currentTrackIdx = 0;
-    let isPlayingLofi = false;
     let mainAudioPlayer = new Audio();
     mainAudioPlayer.loop = true;
     let synthOsc1 = null, synthOsc2 = null, synthGain = null;

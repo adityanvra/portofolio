@@ -2253,14 +2253,19 @@ img {
     position: fixed;
     bottom: 24px;
     left: 24px;
-    z-index: 9999;
+    z-index: 99999;
     pointer-events: auto !important;
-    background: rgba(15, 16, 24, 0.95);
+    background: rgba(15, 16, 24, 0.97);
     border: 1px solid var(--accent-1);
     border-radius: var(--radius-xl);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
     transition: var(--transition-medium);
+}
+
+.lofi-widget * {
+    pointer-events: auto !important;
 }
 
 .lofi-toggle-expand {
@@ -2357,8 +2362,8 @@ img {
 .lofi-btn {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid var(--border-color);
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     color: var(--text-primary);
     display: flex;
@@ -2366,6 +2371,11 @@ img {
     justify-content: center;
     cursor: pointer;
     transition: var(--transition-fast);
+    position: relative;
+    z-index: 10;
+    -webkit-tap-highlight-color: rgba(99, 102, 241, 0.3);
+    touch-action: manipulation;
+    font-size: 1rem;
 }
 
 .lofi-btn:hover {
@@ -2373,10 +2383,12 @@ img {
 }
 
 .lofi-btn.play-btn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     background: var(--gradient-primary);
     border: none;
+    font-size: 1.2rem;
+    box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
 }
 
 .lofi-volume-wrapper {
