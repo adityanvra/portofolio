@@ -1255,11 +1255,76 @@ Certified Full-Stack Developer (Dicoding x DBS Foundation). Experienced in React
         startLofiSound();
     });
 
+    const lofiVolIconBtn = document.getElementById('lofiVolIconBtn');
+    const lofiVolDownBtn = document.getElementById('lofiVolDownBtn');
+    const lofiVolUpBtn = document.getElementById('lofiVolUpBtn');
+    const lofiVolPercent = document.getElementById('lofiVolPercent');
+    let isMuted = false;
+    let previousVolValue = 0.5;
+
+    function applyVolume(newVal) {
+        // Clamp between 0 and 1
+        newVal = Math.max(0, Math.min(1, parseFloat(newVal)));
+        if (lofiVolume) lofiVolume.value = newVal;
+
+        const volPercentNum = Math.round(newVal * 100);
+        if (lofiVolPercent) lofiVolPercent.textContent = volPercentNum + '%';
+
+        // Update YouTube player volume immediately
+        if (ytPlayer && ytPlayer.setVolume) {
+            try {
+                if (newVal === 0) {
+                    if (ytPlayer.mute) ytPlayer.mute();
+                } else {
+                    if (ytPlayer.unMute) ytPlayer.unMute();
+                    ytPlayer.setVolume(volPercentNum);
+                }
+            } catch(e) {}
+        }
+
+        // Update Icon
+        if (lofiVolIconBtn) {
+            if (newVal === 0) lofiVolIconBtn.textContent = '🔇';
+            else if (newVal < 0.4) lofiVolIconBtn.textContent = '🔈';
+            else if (newVal < 0.75) lofiVolIconBtn.textContent = '🔉';
+            else lofiVolIconBtn.textContent = '🔊';
+        }
+    }
+
     if (lofiVolume) {
-        lofiVolume.addEventListener('input', () => {
-            const vol = Math.round(parseFloat(lofiVolume.value) * 100);
-            if (ytPlayer && ytPlayer.setVolume) {
-                try { ytPlayer.setVolume(vol); } catch(e) {}
+        ['input', 'change', 'touchmove', 'pointermove'].forEach(evtName => {
+            lofiVolume.addEventListener(evtName, (e) => {
+                e.stopPropagation();
+                applyVolume(lofiVolume.value);
+            });
+        });
+    }
+
+    if (lofiVolDownBtn) {
+        lofiVolDownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentVal = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+            applyVolume(currentVal - 0.1);
+        });
+    }
+
+    if (lofiVolUpBtn) {
+        lofiVolUpBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentVal = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+            applyVolume(currentVal + 0.1);
+        });
+    }
+
+    if (lofiVolIconBtn) {
+        lofiVolIconBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const currentVal = parseFloat(lofiVolume ? lofiVolume.value : 0.5);
+            if (currentVal > 0) {
+                previousVolValue = currentVal;
+                applyVolume(0);
+            } else {
+                applyVolume(previousVolValue || 0.5);
             }
         });
     }

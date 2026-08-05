@@ -823,8 +823,11 @@
                 <button id="lofiNextBtn" class="lofi-btn" title="Next Sound">⏭</button>
             </div>
             <div class="lofi-volume-wrapper">
-                <span>🔊</span>
-                <input type="range" id="lofiVolume" min="0" max="1" step="0.05" value="0.5">
+                <button id="lofiVolIconBtn" class="lofi-vol-btn" title="Toggle Mute">🔊</button>
+                <button id="lofiVolDownBtn" class="lofi-vol-btn" title="Decrease Volume (-10%)">−</button>
+                <input type="range" id="lofiVolume" min="0" max="1" step="0.05" value="0.5" aria-label="Volume Slider">
+                <button id="lofiVolUpBtn" class="lofi-vol-btn" title="Increase Volume (+10%)">+</button>
+                <span id="lofiVolPercent" class="vol-percent">50%</span>
             </div>
         </div>
         <!-- YouTube iFrame Player (offscreen, not display:none) -->
